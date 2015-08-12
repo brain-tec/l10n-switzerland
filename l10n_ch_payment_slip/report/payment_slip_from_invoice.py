@@ -18,7 +18,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import api, models
+from openerp import models
 
 
 class BVRFromInvoice(models.AbstractModel):
@@ -29,8 +29,8 @@ class ExtendedReport(models.Model):
 
     _inherit = 'report'
 
-    @api.v7
     def _generate_one_slip_per_page_from_invoice_pdf(self, cr, uid, ids,
+                                                     report_name=None,
                                                      context=None):
         """Generate payment slip PDF(s) from report model.
         If there is many pdf they are merged in memory or on
@@ -50,14 +50,18 @@ class ExtendedReport(models.Model):
             context=context
         )
         if len(docs) == 1:
-            return docs[0]._draw_payment_slip(a4=True, b64=False,
+            return docs[0]._draw_payment_slip(a4=True,
+                                              b64=False,
+                                              report_name=report_name,
                                               out_format='PDF')
         else:
+            pdfs = (x._draw_payment_slip(a4=True, b64=False, out_format='PDF',
+                                         report_name=report_name)
+                    for x in docs)
             if company.merge_mode == 'in_memory':
-                return self.merge_pdf_in_memory(docs)
-            return self.merge_pdf_on_disk(docs)
+                return self.merge_pdf_in_memory(pdfs)
+            return self.merge_pdf_on_disk(pdfs)
 
-    @api.v7
     def get_pdf(self, cr, uid, ids, report_name, html=None, data=None,
                 context=None):
         if report_name == 'one_slip_per_page_from_invoice':
@@ -65,7 +69,8 @@ class ExtendedReport(models.Model):
                 cr,
                 uid,
                 ids,
-                context=context
+                context=context,
+                report_name=report_name,
             )
         else:
             return super(ExtendedReport, self).get_pdf(

@@ -86,7 +86,9 @@ class AccountInvoice(models.Model):
             return ''
         if not self.slip_ids:
             return ''
-        self.bvr_reference = ', '.join(x.reference for x in self.slip_ids)
+        self.bvr_reference = ', '.join(x.reference
+                                       for x in self.slip_ids
+                                       if x.reference)
 
     def get_payment_move_line(self):
         """Return the move line related to current invoice slips
@@ -137,13 +139,18 @@ class AccountInvoice(models.Model):
         res = super(AccountInvoice, self).action_number()
         pay_slip = self.env['l10n_ch.payment_slip']
         for inv in self:
-            for pay_slip in pay_slip.compute_pay_slips_from_invoices(inv):
-                if inv.type in ('out_invoice', 'out_refund'):
-                    ref = pay_slip.reference
-                elif inv.reference_type == 'bvr' and inv.reference:
+            if inv.type in ('in_invoice', 'in_refund'):
+                if inv.reference_type == 'bvr' and inv._check_bvr():
                     ref = inv.reference
                 else:
                     ref = False
-                self._action_bvr_number_move_line(pay_slip.move_line_id,
-                                                  ref)
+                move_lines = inv.get_payment_move_line()
+                for move_line_id in move_lines:
+                    self._action_bvr_number_move_line(move_line_id,
+                                                      ref)
+            else:
+                for pay_slip in pay_slip.compute_pay_slips_from_invoices(inv):
+                    ref = pay_slip.reference
+                    self._action_bvr_number_move_line(pay_slip.move_line_id,
+                                                      ref)
         return res

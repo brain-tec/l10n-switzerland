@@ -17,19 +17,18 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import models, api
+from openerp import models
 
 
 class BVRFromCreditControl(models.AbstractModel):
     _name = 'report.slip_from_credit_control'
 
 
-class ExtendedReport(models.TransientModel):
+class ExtendedReport(models.Model):
     """Print pay slip form credit line"""
 
     _inherit = "report"
 
-    @api.v7
     def get_pdf(self, cr, uid, ids, report_name, html=None, data=None,
                 context=None):
         if context is None:
