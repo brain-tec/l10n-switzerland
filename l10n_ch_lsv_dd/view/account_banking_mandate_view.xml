@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  The licence is in the file __openerp__.py
+-->
+<openerp>
+<data>
+
+
+<record id="view_mandate_form_ext" model="ir.ui.view">
+    <field name="name">view.mandate.form.ext</field>
+    <field name="model">account.banking.mandate</field>
+    <field name="inherit_id" ref="account_banking_mandate.view_mandate_form"/>
+    <field name="arch" type="xml">
+
+        <!--
+          We clear out the domain because otherwise we can only see those banks
+          which are those of the partner_id, but that other field is read-only
+          so in practise we can not select any bank, but only create new ones.
+        -->
+        <field name="partner_bank_id" position="attributes">
+            <attribute name="domain">[]</attribute>
+        </field>
+
+    </field>
+</record>
+
+
+</data>
+</openerp>

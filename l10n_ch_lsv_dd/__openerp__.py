@@ -42,6 +42,7 @@
         'view/lsv_export_wizard_view.xml',
         'view/payment_order_view.xml',
         'view/invoice_view.xml',
+        'view/account_banking_mandate_view.xml',
         'security/ir.model.access.csv',
     ],
     'demo': [],
