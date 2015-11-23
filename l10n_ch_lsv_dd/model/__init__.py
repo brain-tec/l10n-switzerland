@@ -24,3 +24,4 @@ from . import bank
 from . import invoice
 from . import move_line
 from . import payment_order
+from . import company

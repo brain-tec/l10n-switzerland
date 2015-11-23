@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+       <record model="ir.ui.view" id="company_form_view">
+            <field name="name">res.company.form.inherit.bvr</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="LSV/DD">
+                        <group colspan="4" string="LSV">
+                            <field name="lsv_email_address"/>
+                        </group>
+                        <group colspan="4" string="DD">
+                            <field name="dd_email_address"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>
