@@ -10,9 +10,13 @@
                     <page string="LSV/DD">
                         <group colspan="4" string="LSV">
                             <field name="lsv_email_address"/>
+                            <field name="lsv_payment_mode"/>
+                            <field name="lsv_currency"/>
                         </group>
                         <group colspan="4" string="DD">
                             <field name="dd_email_address"/>
+                            <field name="dd_payment_mode"/>
+                            <field name="dd_currency"/>
                         </group>
                     </page>
                 </xpath>

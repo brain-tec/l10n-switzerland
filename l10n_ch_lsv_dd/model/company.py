@@ -33,7 +33,35 @@ class ResCompany(models.Model):
         help='Email address where to send the LSV files.'
     )
 
+    lsv_payment_mode = fields.Many2one(
+        'payment.mode',
+        string='Payment Mode for LSV',
+        help='The payment mode to use when creating the payment orders '
+             'which will be used to generate the LSV files.'
+    )
+
+    lsv_currency = fields.Selection(
+        [('CHF', 'CHF'), ('EUR', 'EUR')],
+        string="Currency for LSV",
+        required=True,
+        default='CHF'
+    )
+
     dd_email_address = fields.Char(
         'DD Email Address',
         help='Email address where to send the DD files.'
+    )
+
+    dd_payment_mode = fields.Many2one(
+        'payment.mode',
+        string='Payment Mode for DD',
+        help='The payment mode to use when creating the payment orders '
+             'which will be used to generate the DD files.'
+    )
+
+    dd_currency = fields.Selection(
+        [('CHF', 'CHF'), ('EUR', 'EUR')],
+        string="Currency for DD",
+        required=True,
+        default='CHF'
     )

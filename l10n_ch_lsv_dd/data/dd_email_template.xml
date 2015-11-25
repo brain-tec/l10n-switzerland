@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="email_template_dd" model="email.template">
+            <field name="name">Email DD Payment File</field>
+            <field name="email_from">${(object.user_id.email or object.company_id.email or 'noreply@localhost')|safe}</field>
+            <field name="email_to">${object.company_id.dd_email_address}</field>
+            <field name="subject">DD Payment File</field>
+            <field name="model_id" ref="account_banking_payment_export.model_payment_order"/>
+            <field name="auto_delete" eval="False"/>
+            <field name="lang">${object.user_id.partner_id.lang}</field>
+            <field name="body_html"><![CDATA[
+            <div style="font-family: sans-serif; font-size: 10px;">
+                <p>Find attached the DD payment file.</p>   
+            </div>
+            ]]></field>
+        </record>
+    </data>
+</openerp>

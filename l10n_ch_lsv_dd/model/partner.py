@@ -20,6 +20,7 @@
 ##############################################################################
 from openerp import models, fields
 
+
 class ResPartner(models.Model):
     ''' Overrides it so that the res.partner can select which account he/she
         wants to use for LSV or DD payments.
@@ -27,11 +28,10 @@ class ResPartner(models.Model):
 
     _inherit = 'res.partner'
 
-    lsv_account_id = fields.Many2one('res.partner.bank', 'Bank for LSV',
-                                     help='The bank account to use for LSV '
-                                          'payment files.')
-    
-    dd_account_id = fields.Many2one('res.partner.bank', 'Bank for DD',
-                                    help='The bank account to use for DD '
-                                         'payment files.')
-    
+    lsv_bank_account_id = fields.Many2one('res.partner.bank', 'Bank for LSV',
+                                          help='The bank account to use '
+                                               'for LSV payment files.')
+
+    dd_bank_account_id = fields.Many2one('res.partner.bank', 'Bank for DD',
+                                         help='The bank account to use for DD '
+                                              'payment files.')

@@ -73,19 +73,10 @@ class PostDdExportWizard(models.TransientModel):
     )
 
     @api.multi
-    def generate_dd_file(self):
-        ''' Generate direct debit export object including the direct
-            debit file content.
-            Called by generate button
+    def _generate_dd_file_content(self, payment_orders):
+        ''' Generates the DD file corresponding to the payment.order(s)
+            received, and returns it as a string.
         '''
-        self.ensure_one()
-        payment_order_obj = self.env['payment.order']
-
-        active_ids = self.env.context.get('active_ids', [])
-        if not active_ids:
-            raise exceptions.ValidationError(_('No payment order selected'))
-
-        payment_orders = payment_order_obj.browse(active_ids)
         properties = self._setup_properties(payment_orders[0])
         records = []
         overall_amount = 0
@@ -160,6 +151,33 @@ class PostDdExportWizard(models.TransientModel):
         records = self._customize_records(records, properties)
         file_content = ''.join(records)  # Concatenate all records
         file_content = file_content.encode('iso8859-1')  # Required encoding
+
+        return file_content, properties
+
+    @api.multi
+    def generate_dd_file(self):
+        ''' Generate direct debit export object including the direct
+            debit file content.
+            Called by generate button
+        '''
+        self.ensure_one()
+        payment_order_obj = self.env['payment.order']
+
+        active_ids = self.env.context.get('active_ids', [])
+        if not active_ids:
+            raise exceptions.ValidationError(_('No payment order selected'))
+
+        payment_orders = payment_order_obj.browse(active_ids)
+
+        # Computes the overall amount.
+        overall_amount = 0
+        for payment_order in payment_orders:
+            overall_amount += payment_order.total
+
+        # Generates the file content corresponding to the payment orders.
+        file_content, properties = \
+            self._generate_dd_file_content(payment_orders)
+
         export_id = self._create_dd_export(active_ids,
                                            overall_amount, properties,
                                            file_content)
