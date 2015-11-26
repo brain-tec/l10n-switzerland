@@ -294,8 +294,7 @@ class AccountInvoice(models.Model):
 
             # Gets the paid invoices from this company.
             paid_invoices = self.search([('company_id', '=', res_company.id),
-                                         ('state', 'in', ('paid', 'open')),
-#                                        ('state', 'in', ('paid')),
+                                         ('state', '=', 'paid'),
                                          ])
 
             # Whether to send the LSV payment files.
