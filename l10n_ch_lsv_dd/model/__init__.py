@@ -19,6 +19,7 @@
 #
 ##############################################################################
 
+from . import date_utils
 from . import banking_export_ch_dd
 from . import bank
 from . import invoice

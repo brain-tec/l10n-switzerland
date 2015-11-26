@@ -20,7 +20,8 @@
 ##############################################################################
 
 import base64
-from datetime import datetime
+from datetime import datetime, timedelta
+from date_utils import is_weekday, is_past_weekday
 from openerp import models, api, _, exceptions, fields, SUPERUSER_ID
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
@@ -283,6 +284,45 @@ class AccountInvoice(models.Model):
         return True
 
     @api.model
+    def _test_send_lsv_dd(self, company):
+        ''' Checks if we can send the LSV or DD files now.
+            We can send it only once a day, and only on weekdays.
+            It attempts to send the files between the timeframe indicated
+            in the res.company view, to allow for some delay in the scheduler.
+        '''
+        # Gets the date of today as the user sees it (i.e. taking into
+        # account its time-zone).
+        now = fields.Datetime.context_timestamp(company, datetime.now())
+
+        # Gets the cron.job which controls the automated sending.
+        ir_model_data_obj = self.env['ir.model.data']
+        ir_cron_obj = self.env['ir.cron']
+        ir_cron_id = \
+            ir_model_data_obj.get_object_reference('l10n_ch_lsv_dd',
+                                                   'cronjob_send_lsv_dd')[1]
+        ir_cron = ir_cron_obj.browse(ir_cron_id)
+
+        # Gets the date of the last LSV/DD sending, taking into account
+        # the time-zone of the user.
+        if company.last_lsv_dd_send_date:
+            last_lsv_dd_send_date = \
+                fields.Datetime.context_timestamp(
+                    ir_cron,
+                    fields.Datetime.from_string(company.last_lsv_dd_send_date))
+        else:
+            last_lsv_dd_send_date = False
+
+        # Checks the conditions.
+        within_the_send_timeframe = int(company.lsv_dd_send_hour_start) \
+            <= now.hour < (int(company.lsv_dd_send_hour_start) + 1)
+        test_send_lsv_dd = within_the_send_timeframe and \
+            is_weekday(now) and \
+            ((not last_lsv_dd_send_date) or \
+             is_past_weekday(last_lsv_dd_send_date, now))
+
+        return test_send_lsv_dd
+
+    @api.model
     def send_lsv_dd(self):
         ''' Iterates over all the paid invoices the LSV and DD payment files
             of which has not been sent yet to the addresses indicated in the
@@ -291,6 +331,9 @@ class AccountInvoice(models.Model):
             (but only if those addresses are set).
         '''
         for company in self.env['res.company'].search([]):
+            if not self._test_send_lsv_dd(company):
+                continue
+
             # Gets the paid invoices from this company.
             paid_invoices = self.search(
                 [('company_id', '=', company.id),
@@ -324,5 +367,10 @@ class AccountInvoice(models.Model):
                      ])
                 if pending_invoices:
                     pending_invoices._send_dd(company.dd_email_address)
+
+            # Stores the datetime in which the last sending of the payment
+            # files took place, and prepares the next execution date
+            # of the scheduler.
+            company.last_lsv_dd_send_date = fields.Datetime.now()
 
         return True

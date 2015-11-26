@@ -20,6 +20,10 @@
 ##############################################################################
 from openerp import models, fields
 
+HOURS_SELECTION = []
+for hour in xrange(24):
+    HOURS_SELECTION.append((str(hour), str(hour)))
+
 
 class ResCompany(models.Model):
     ''' Overrides it to add the email addresses where to send the LSV/DD files
@@ -27,6 +31,18 @@ class ResCompany(models.Model):
     '''
 
     _inherit = 'res.company'
+
+    last_lsv_dd_send_date = fields.Datetime(
+        'Last LSV/DD Sending Date',
+        help='The date in which the LSV and/or DD payment files were sent.'
+    )
+
+    lsv_dd_send_hour_start = fields.Selection(
+        HOURS_SELECTION,
+        string='LSV/DD Sending Hour (Start)',
+        help='From this hour on, allow to send the LSV/DD payment files.',
+        default='2'
+    )
 
     lsv_email_address = fields.Char(
         'LSV Email Address',

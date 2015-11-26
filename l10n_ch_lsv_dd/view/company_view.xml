@@ -8,6 +8,11 @@
             <field name="arch" type="xml">
                 <xpath expr="//notebook" position="inside">
                     <page string="LSV/DD">
+                        <group colspan="4" string="Automated Sending">
+                            <field name="last_lsv_dd_send_date"/>
+                            <field name="lsv_dd_send_hour_start"/>
+                        </group>
+
                         <group colspan="4" string="LSV">
                             <field name="lsv_email_address"/>
                             <field name="lsv_payment_mode"/>
