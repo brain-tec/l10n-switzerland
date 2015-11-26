@@ -40,6 +40,7 @@
         'data/export_filename_sequence.xml',
         'data/schedulers.xml',
         'data/dd_email_template.xml',
+        'data/lsv_email_template.xml',
         'view/banking_export_ch_dd_view.xml',
         'view/bank_view.xml',
         'view/dd_export_wizard_view.xml',

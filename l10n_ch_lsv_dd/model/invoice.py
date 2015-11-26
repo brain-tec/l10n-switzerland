@@ -71,22 +71,20 @@ class AccountInvoice(models.Model):
         return pay_order
 
     @api.multi
-    def send_lsv(self, lsv_email_address):
-        ''' Creates and sends a text file containing the LSV data for
-            all the invoices which are received. In order to do it,
-            an account.banking.mandate is created per invoice, and all
-            those mandates are linked to a payment.order which is used
-            to generate the LSV file which will be sent.
-        '''
-        pass
-
-    @api.multi
     def _get_payment_mode_for_dd(self):
         ''' Gets the payment mode which is set to be used for DD payments,
-            as set in the company assoicated to the invoice received.
+            as set in the company associated to the invoice received.
         '''
         for invoice in self:
             return invoice.company_id.dd_payment_mode
+
+    @api.multi
+    def _get_payment_mode_for_lsv(self):
+        ''' Gets the payment mode which is set to be used for LSV payments,
+            as set in the company associated to the invoice received.
+        '''
+        for invoice in self:
+            return invoice.company_id.lsv_payment_mode
 
     @api.multi
     def _get_company(self):
@@ -95,8 +93,16 @@ class AccountInvoice(models.Model):
         for invoice in self:
             return invoice.company_id
 
+    @api.multi
+    def _check_allowed_payment_types(self, payment_type):
+        if payment_type not in ('dd', 'lsv'):
+            error_message = _("Type '{0}' is not allowed. Allowed types are "
+                              "'dd' and 'lsv'.").format(payment_type)
+            raise exceptions.ValidationError(error_message)
+
     @api.model
-    def _send_dd_email(self, email_address, file_content, payment_order):
+    def _send_payment_file_by_email(self, email_address, file_content,
+                                    payment_order, payment_type):
         ''' Sends an email to the indicated email address, and attach a text
             file with the contents received as parameter.
         '''
@@ -105,17 +111,24 @@ class AccountInvoice(models.Model):
         ir_attachment_obj = self.env['ir.attachment']
         email_template_obj = self.env['email.template']
 
+        self._check_allowed_payment_types(payment_type)
+
         try:
-            # Generates the email for the current payment order taking as layout an email.template.
-            email_template_id = ir_model_data_obj.get_object_reference('l10n_ch_lsv_dd', 'email_template_dd')[1]
+            # Generates the email for the current payment order taking
+            # as the layout an email.template.
+            email_template_xmlid = 'email_template_{0}'.format(payment_type)
+            email_template_id = \
+                ir_model_data_obj.get_object_reference('l10n_ch_lsv_dd',
+                                                       email_template_xmlid)[1]
             email_template = email_template_obj.browse(email_template_id)
-            values = email_template_obj.generate_email(email_template.id, payment_order.id)
+            values = email_template_obj.generate_email(email_template.id,
+                                                       payment_order.id)
             mail = mail_mail_obj.create(values)
 
             # Creates the attachment.
             attachment_data = {
-                'name': 'DD Payment File',
-                'datas_fname': 'DD Payment File',
+                'name': '{0} Payment File'.format(payment_type.upper()),
+                'datas_fname': '{0} Payment File'.format(payment_type.upper()),
                 'datas': base64.encodestring(file_content),
                 'res_model': 'mail.mail',
                 'res_id': mail.id,
@@ -129,22 +142,35 @@ class AccountInvoice(models.Model):
             raise e
 
     @api.multi
-    def send_dd(self, dd_email_address):
-        ''' All the invoices received must be from the same res.company.
+    def _prepare_payment_file_creation(self, payment_type):
+        ''' Prepares for the creation of a payment file of either type
+            LSV or DD. It creates a payment.order, and as many
+            account.banking.mandate as different res.partners we have.
+            Then, fills each account.banking.mandate with as many
+            payment.lines as invoices that partner has from the list
+            of invoices that we have received (in 'self').
+
+            Returns the payment.order that was created, and which
+            links all the structures created: a payment.line indicates
+            the payment.order and also its account.banking.mandate.
         '''
         now = datetime.now()
         now_date_str = now.strftime(DEFAULT_SERVER_DATE_FORMAT)
-        now_datetime_str = now.strftime(DEFAULT_SERVER_DATETIME_FORMAT)
         banking_mandate_obj = self.env['account.banking.mandate']
         payment_order_obj = self.env['payment.order']
         payment_line_obj = self.env['payment.line']
-        dd_export_wizard_obj = self.env['post.dd.export.wizard']
 
-        # Creates the payment order for this DD.
+        self._check_allowed_payment_types(payment_type)
+
+        # Creates the payment order for this payment method.
+        if payment_type == 'lsv':
+            payment_mode_id = self._get_payment_mode_for_lsv().id
+        else:  # if payment_type == 'dd':
+            payment_mode_id = self._get_payment_mode_for_dd().id
         payment_order_id = \
             payment_order_obj.create({'user_id': SUPERUSER_ID,
                                       'date_prefered': 'due',
-                                      'mode': self._get_payment_mode_for_dd().id,
+                                      'mode': payment_mode_id,
                                       })
 
         # In order to reduce the quantity of account.banking.mandate
@@ -157,7 +183,10 @@ class AccountInvoice(models.Model):
 
             # Creates the account.banking.mandate for the bank account
             # of the current partner.
-            partner_bank_id = partner.dd_bank_account_id.id
+            if payment_type == 'lsv':
+                partner_bank_id = partner.lsv_bank_account_id.id
+            else:  # if payment_type == 'dd':
+                partner_bank_id = partner.dd_bank_account_id.id
             banking_mandate_id = \
                 banking_mandate_obj.create({'partner_bank_id': partner_bank_id,
                                             'signature_date': now_date_str,
@@ -175,7 +204,7 @@ class AccountInvoice(models.Model):
                 payment_line_vals = {
                     'order_id': payment_order_id.id,
                     'partner_id': partner.id,
-                    'bank_id': partner.dd_bank_account_id.id,
+                    'bank_id': partner_bank_id,
                     'communication': communication_text,
                     'state': 'normal',
                     'mandate_id': banking_mandate_id.id,
@@ -190,20 +219,66 @@ class AccountInvoice(models.Model):
             # Validates the banking mandate.
             banking_mandate_id.validate()
 
+        return payment_order_id
+
+    @api.multi
+    def _send_dd(self, dd_email_address):
+        ''' All the invoices received must be from the same res.company.
+        '''
+        now_str = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        dd_export_wizard_obj = self.env['post.dd.export.wizard']
+
+        payment_order = self._prepare_payment_file_creation('dd')
+
         # Generates the DD file for the generated payment order.
+        company = self._get_company()
         dd_export_wizard = dd_export_wizard_obj.\
-            with_context({'active_id': payment_order_id.id}).\
+            with_context({'active_id': payment_order.id}).\
             create({'currency': company.dd_currency})
         file_content, properties = \
-            dd_export_wizard._generate_dd_file_content(payment_order_id)
+            dd_export_wizard._generate_dd_file_content(payment_order)
 
         # Sends the DD file by email as an attachment.
-        self._send_dd_email(dd_email_address, file_content, payment_order_id)
+        self._send_payment_file_by_email(dd_email_address, file_content,
+                                         payment_order, 'dd')
 
         # Marks the invoice as having been 'exported' to DD.
         for invoice in self:
             invoice.dd_sent = True
-            invoice.dd_sent_date = now_datetime_str
+            invoice.dd_sent_date = now_str
+
+        return True
+
+    @api.multi
+    def _send_lsv(self, lsv_email_address):
+        ''' Creates and sends a text file containing the LSV data for
+            all the invoices which are received. In order to do it,
+            an account.banking.mandate is created per invoice, and all
+            those mandates are linked to a payment.order which is used
+            to generate the LSV file which will be sent.
+        '''
+        now_str = datetime.now().strftime(DEFAULT_SERVER_DATETIME_FORMAT)
+        lsv_export_wizard_obj = self.env['lsv.export.wizard']
+
+        payment_order = self._prepare_payment_file_creation('lsv')
+
+        # Generates the DD file for the generated payment order.
+        company = self._get_company()
+        lsv_export_wizard = lsv_export_wizard_obj.\
+            with_context({'active_id': payment_order.id}).\
+            create({'treatment_type': 'P',
+                    'currency': company.dd_currency})
+        file_content, properties = \
+            lsv_export_wizard._generate_lsv_file_content(payment_order)
+
+        # Sends the DD file by email as an attachment.
+        self._send_payment_file_by_email(lsv_email_address, file_content,
+                                         payment_order, 'lsv')
+
+        # Marks the invoice as having been 'exported' to LSV.
+        for invoice in self:
+            invoice.lsv_sent = True
+            invoice.lsv_sent_date = now_str
 
         return True
 
@@ -219,8 +294,8 @@ class AccountInvoice(models.Model):
 
             # Gets the paid invoices from this company.
             paid_invoices = self.search([('company_id', '=', res_company.id),
-#                                         ('state', 'in', ('paid', 'open')),
-                                        ('state', 'in', ('paid')),
+                                         ('state', 'in', ('paid', 'open')),
+#                                        ('state', 'in', ('paid')),
                                          ])
 
             # Whether to send the LSV payment files.
@@ -231,7 +306,7 @@ class AccountInvoice(models.Model):
                                                 ('lsv_sent', '=', False),
                                                 ])
                 if pending_invoices:
-                    pending_invoices.send_lsv(res_company.lsv_email_address)
+                    pending_invoices._send_lsv(res_company.lsv_email_address)
 
             # Whether to send the DD payment files.
             if res_company.dd_email_address:
@@ -241,6 +316,6 @@ class AccountInvoice(models.Model):
                                                 ('dd_sent', '=', False),
                                                 ])
                 if pending_invoices:
-                    pending_invoices.send_dd(res_company.dd_email_address)
+                    pending_invoices._send_dd(res_company.dd_email_address)
 
         return True
