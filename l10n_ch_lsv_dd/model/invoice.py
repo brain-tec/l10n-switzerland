@@ -290,31 +290,39 @@ class AccountInvoice(models.Model):
             the invoices, and sends them to the indicated email addresses
             (but only if those addresses are set).
         '''
-        for res_company in self.env['res.company'].search([]):
-
+        for company in self.env['res.company'].search([]):
             # Gets the paid invoices from this company.
-            paid_invoices = self.search([('company_id', '=', res_company.id),
-                                         ('state', '=', 'paid'),
-                                         ])
+            paid_invoices = self.search(
+                [('company_id', '=', company.id),
+                 ('state', '=', 'paid'),
+                 ])
 
             # Whether to send the LSV payment files.
-            if res_company.lsv_email_address:
+            if company.lsv_email_address:
+                lsv_company_account = company.lsv_bank_account_id
+
                 # Searches for those paid invoices for which their
                 # LSD payment file were not yet sent.
-                pending_invoices = self.search([('id', 'in', paid_invoices.ids),
-                                                ('lsv_sent', '=', False),
-                                                ])
+                pending_invoices = self.search(
+                    [('id', 'in', paid_invoices.ids),
+                     ('lsv_sent', '=', False),
+                     ('partner_bank_id', '=', lsv_company_account.id),
+                     ])
                 if pending_invoices:
-                    pending_invoices._send_lsv(res_company.lsv_email_address)
+                    pending_invoices._send_lsv(company.lsv_email_address)
 
             # Whether to send the DD payment files.
-            if res_company.dd_email_address:
+            if company.dd_email_address:
+                dd_company_account = company.dd_bank_account_id
+
                 # Searches for those paid invoices for which their
                 # DD payment file were not yet sent.
-                pending_invoices = self.search([('id', 'in', paid_invoices.ids),
-                                                ('dd_sent', '=', False),
-                                                ])
+                pending_invoices = self.search(
+                    [('id', 'in', paid_invoices.ids),
+                     ('dd_sent', '=', False),
+                     ('partner_bank_id', '=', dd_company_account.id),
+                     ])
                 if pending_invoices:
-                    pending_invoices._send_dd(res_company.dd_email_address)
+                    pending_invoices._send_dd(company.dd_email_address)
 
         return True

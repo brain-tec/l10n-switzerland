@@ -47,6 +47,10 @@ class ResCompany(models.Model):
         default='CHF'
     )
 
+    lsv_bank_account_id = fields.Many2one('res.partner.bank', 'Bank for LSV',
+                                          help='The bank account to use '
+                                               'for LSV payment files.')
+
     dd_email_address = fields.Char(
         'DD Email Address',
         help='Email address where to send the DD files.'
@@ -65,3 +69,7 @@ class ResCompany(models.Model):
         required=True,
         default='CHF'
     )
+
+    dd_bank_account_id = fields.Many2one('res.partner.bank', 'Bank for DD',
+                                         help='The bank account to use for DD '
+                                              'payment files.')
