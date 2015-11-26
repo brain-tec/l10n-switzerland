@@ -15,7 +15,7 @@
     <data noupdate="1">
         <record model="ir.cron" id="cronjob_send_lsv_dd">
             <field name='name'>Send LSV and DD payment files</field>
-            <field name="active">True</field>
+            <field name="active">False</field>
         </record>
     </data>
 
