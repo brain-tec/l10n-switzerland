@@ -30,5 +30,26 @@
       key2="client_action_multi" name="Free Invoices"
       res_model="account.invoice.free" src_model="account.invoice"
       view_mode="form" target="new" view_type="form" />
+
+    <record id="account_invoice_form_ext" model="ir.ui.view">
+      <field name="name">account.invoice.form.ext</field>
+      <field name="model">account.invoice</field>
+      <field name="inherit_id" ref="account.invoice_form"/>
+      <field name="arch" type="xml">
+        <page string="Payments" position="after">
+          <page string="LSV/DD">
+            <group colspan="4" string="LSV">
+              <field name="lsv_sent" readonly="1"/>
+              <field name="lsv_sent_date" readonly="1"/>
+            </group>
+            <group colspan="4" string="DD">
+              <field name="dd_sent" readonly="1"/>
+              <field name="dd_sent_date" readonly="1"/>
+            </group>
+          </page>
+        </page>
+      </field>
+    </record>
+
   </data>
 </openerp>
