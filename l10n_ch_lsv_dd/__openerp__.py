@@ -33,6 +33,7 @@
                 'account_direct_debit',
                 'account_banking_mandate',
                 'account_banking_payment_export',
+                'account_payment',
                 'l10n_ch_payment_slip_base_transaction_id'],
     'external_dependencies': {},
     'data': [
@@ -50,6 +51,7 @@
         'view/account_banking_mandate_view.xml',
         'view/company_view.xml',
         'view/partner_view.xml',
+        'view/lsv_dd_error_view.xml',
         'security/ir.model.access.csv',
     ],
     'demo': [],
