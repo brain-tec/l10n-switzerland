@@ -176,6 +176,7 @@ class AccountInvoice(models.Model):
         now_date_str = now.strftime(DEFAULT_SERVER_DATE_FORMAT)
         banking_mandate_obj = self.env['account.banking.mandate']
         payment_line_obj = self.env['payment.line']
+        account_move_line_obj = self.env['account.move.line']
 
         self._check_allowed_payment_types(payment_type)
 
@@ -207,6 +208,10 @@ class AccountInvoice(models.Model):
                 communication_text = 'For Invoice {0}.'.format(invoice.number)
                 company = self._get_company()
                 company_currency = company.currency_id
+                account_move_line = account_move_line_obj.search([
+                    ('invoice', '=', invoice.id),
+                    ('debit', '=', invoice.amount_total)])
+
                 payment_line_vals = {
                     'order_id': payment_order.id,
                     'partner_id': partner.id,
@@ -218,7 +223,8 @@ class AccountInvoice(models.Model):
                     'currency': invoice.currency_id.id,
                     'company_currency': company_currency.id,
                     'company_id': company.id,
-                    'move_line_id': False,
+#                    'move_line_id': False,  #TODO: This failed before.
+                    'move_line_id': account_move_line.id,
                 }
                 payment_line_obj.create(payment_line_vals)
 
@@ -350,8 +356,9 @@ class AccountInvoice(models.Model):
             (but only if those addresses are set).
         '''
         for company in self.env['res.company'].search([]):
-            if not self._test_send_lsv_dd(company):
-                continue
+            #TODO: Remove this after TESTING.
+#             if not self._test_send_lsv_dd(company):
+#                 continue
 
             # Gets the paid invoices from this company.
             paid_invoices = self.search(

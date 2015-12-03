@@ -81,8 +81,6 @@ class LsvExportWizard(models.TransientModel):
         ''' Generates the LSV file corresponding to the payment.order(s)
             received, and returns it as a string.
         '''
-        payment_line_obj = self.env['payment.line']
-
         # common properties for all lines
         properties = self._setup_properties(payment_orders[0])
 
