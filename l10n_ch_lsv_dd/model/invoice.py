@@ -359,9 +359,9 @@ class AccountInvoice(models.Model):
                 continue
 
             # Gets the paid invoices from this company.
-            paid_invoices = self.search(
+            open_invoices = self.search(
                 [('company_id', '=', company.id),
-                 ('state', '=', 'paid'),
+                 ('state', '=', 'open'),
                  ])
 
             # Whether to send the LSV payment files.
@@ -371,7 +371,7 @@ class AccountInvoice(models.Model):
                 # Searches for those paid invoices for which their
                 # LSD payment file were not yet sent.
                 pending_invoices = self.search(
-                    [('id', 'in', paid_invoices.ids),
+                    [('id', 'in', open_invoices.ids),
                      ('lsv_sent', '=', False),
                      ('partner_bank_id', '=', lsv_company_account.id),
                      ])
@@ -385,7 +385,7 @@ class AccountInvoice(models.Model):
                 # Searches for those paid invoices for which their
                 # DD payment file were not yet sent.
                 pending_invoices = self.search(
-                    [('id', 'in', paid_invoices.ids),
+                    [('id', 'in', open_invoices.ids),
                      ('dd_sent', '=', False),
                      ('partner_bank_id', '=', dd_company_account.id),
                      ])
