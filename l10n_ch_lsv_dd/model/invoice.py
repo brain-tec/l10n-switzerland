@@ -43,6 +43,18 @@ class AccountInvoice(models.Model):
     dd_sent_date = fields.Datetime('DD Payment File Sending Date')
 
     @api.multi
+    def copy(self, defaults):
+        ''' Makes sure that the fields which indicate if a invoice
+            was sent as LSV or DD are cleared.
+        '''
+        defaults.update({'lsv_sent': False,
+                         'lsv_sent_date': False,
+                         'dd_sent': False,
+                         'dd_sent_date': False,
+                         })
+        return super(AccountInvoice, self).copy(defaults)
+
+    @api.multi
     def cancel_payment_lines(self):
         ''' This function simply finds related payment lines and move them
             in a new payment order.
