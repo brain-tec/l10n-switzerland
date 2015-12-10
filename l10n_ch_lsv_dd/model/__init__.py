@@ -28,3 +28,4 @@ from . import payment_order
 from . import company
 from . import partner
 from . import lsv_dd_error
+from . import payment_slip

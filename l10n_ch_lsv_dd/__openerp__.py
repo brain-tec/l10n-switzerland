@@ -34,6 +34,7 @@
                 'account_banking_mandate',
                 'account_banking_payment_export',
                 'account_payment',
+                'l10n_ch_payment_slip',
                 'l10n_ch_payment_slip_base_transaction_id'],
     'external_dependencies': {},
     'data': [
