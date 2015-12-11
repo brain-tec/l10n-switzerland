@@ -18,7 +18,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import models, fields
+from openerp import models, fields, api, _
 
 HOURS_SELECTION = []
 for hour in xrange(24):
@@ -31,6 +31,15 @@ class ResCompany(models.Model):
     '''
 
     _inherit = 'res.company'
+
+#     @api.multi
+#     def write(self, values):
+#         ''' Overrides the write() so that a a check is done over
+#             certain values which must be set. In particular, the parameters
+#             which control the automatic sending of the
+#             LSV/DD payment files.
+#         '''
+#         values_to_check
 
     last_lsv_dd_send_date = fields.Datetime(
         'Last LSV/DD Sending Date',
@@ -59,7 +68,6 @@ class ResCompany(models.Model):
     lsv_currency = fields.Selection(
         [('CHF', 'CHF'), ('EUR', 'EUR')],
         string="Currency for LSV",
-        required=True,
         default='CHF'
     )
 
@@ -82,7 +90,6 @@ class ResCompany(models.Model):
     dd_currency = fields.Selection(
         [('CHF', 'CHF'), ('EUR', 'EUR')],
         string="Currency for DD",
-        required=True,
         default='CHF'
     )
 

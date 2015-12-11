@@ -54,6 +54,25 @@ class AccountInvoice(models.Model):
                          })
         return super(AccountInvoice, self).copy(defaults)
 
+    @api.model
+    def create(self, values):
+        # We get the partner_bank_id of the invoice from the
+        # bank of the res.company for LSV if the res.partner 
+        # has an LSV bank indicated; or the bank of the
+        # res.company for DD if the res.partner has a DD indicated.
+        if 'partner_id' in values:
+            partner_bank_id = None
+            partner = self.env['res.partner'].browse(values['partner_id'])
+            company = self.env['res.users'].browse(self.env.uid).company_id
+            if partner and company:
+                if partner.lsv_bank_account_id and company.lsv_bank_account_id:
+                    partner_bank_id = company.lsv_bank_account_id.id
+                elif partner.dd_bank_account_id and company.dd_bank_account_id:
+                    partner_bank_id = company.dd_bank_account_id.id
+            values.update({'partner_bank_id': partner_bank_id})
+
+        return super(AccountInvoice, self).create(values)
+
     @api.multi
     def cancel_payment_lines(self):
         ''' This function simply finds related payment lines and move them
