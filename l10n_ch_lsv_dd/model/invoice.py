@@ -61,17 +61,62 @@ class AccountInvoice(models.Model):
         # has an LSV bank indicated; or the bank of the
         # res.company for DD if the res.partner has a DD indicated.
         if 'partner_id' in values:
-            partner_bank_id = None
             partner = self.env['res.partner'].browse(values['partner_id'])
             company = self.env['res.users'].browse(self.env.uid).company_id
             if partner and company:
-                if partner.lsv_bank_account_id and company.lsv_bank_account_id:
-                    partner_bank_id = company.lsv_bank_account_id.id
-                elif partner.dd_bank_account_id and company.dd_bank_account_id:
-                    partner_bank_id = company.dd_bank_account_id.id
-            values.update({'partner_bank_id': partner_bank_id})
+                partner_bank = self._get_partner_bank_id(partner, company)
+                values.update({'partner_bank_id': partner_bank.id})
 
         return super(AccountInvoice, self).create(values)
+
+    @api.multi
+    def onchange_partner_id(self, invoice_type, partner_id, date_invoice=False,
+                            payment_term=False, partner_bank_id=False,
+                            company_id=False):
+        ''' Overwrites the implementation of l10n_ch_base_bank so that
+            we take into account the existance of LSV/DD bank accounts.
+        '''
+        res = super(AccountInvoice, self).onchange_partner_id(
+            invoice_type, partner_id,
+            date_invoice=date_invoice, payment_term=payment_term,
+            partner_bank_id=partner_bank_id, company_id=company_id
+        )
+        bank_id = False
+        if partner_id:
+            if invoice_type in ('in_invoice', 'in_refund'):
+                partner = self.env['res.partner'].browse(partner_id)
+                if partner.bank_ids:
+                    bank_id = partner.bank_ids[0].id
+                res['value']['partner_bank_id'] = bank_id
+            else:
+                partner_bank = self._get_partner_bank_id(partner_id, self.env['uid'].company_id)
+                if partner_bank:
+                    res['value']['partner_bank_id'] = partner_bank.id
+                    bank_id = partner_bank.id
+        if partner_bank_id != bank_id:
+            res['value']['partner_bank_id'] = bank_id
+        return res
+
+#     @api.onchange('partner_id')
+#     def onchange_partner_id_lsv_dd(self):
+#         if self.partner_id:
+#             partner_bank = self._get_partner_bank_id(self.partner_id, self.env['uid'].company_id)
+#             if partner_bank:
+#                 self.partner_bank_id = partner_bank
+#         return True
+
+    def _get_partner_bank_id(self, partner, company):
+        ''' Returns the bank account to set on the field 'partner_bank_id'
+            of the invoice, which depends on the banks set for LSV and DD
+            on both the res.partner and the res.company. If it can not
+            make a match, it returns False.
+        '''
+        partner_bank = False
+        if partner.lsv_bank_account_id and company.lsv_bank_account_id:
+            partner_bank = company.lsv_bank_account_id
+        elif partner.dd_bank_account_id and company.dd_bank_account_id:
+            partner_bank = company.dd_bank_account_id
+        return partner_bank
 
     @api.multi
     def cancel_payment_lines(self):
