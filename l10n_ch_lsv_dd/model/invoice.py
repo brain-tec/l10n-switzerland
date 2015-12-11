@@ -57,15 +57,30 @@ class AccountInvoice(models.Model):
     @api.model
     def create(self, values):
         # We get the partner_bank_id of the invoice from the
-        # bank of the res.company for LSV if the res.partner 
+        # bank of the res.company for LSV if the res.partner
         # has an LSV bank indicated; or the bank of the
         # res.company for DD if the res.partner has a DD indicated.
-        if 'partner_id' in values:
+        #
+        # If the field 'partner_bank_id' is on 'values', it's because
+        # the invoice was created manually, thus we do not overwrite
+        # the values introduce on it.
+        #
+        # If the type of an invoice is a supplier one, we do not take
+        # into account the bank of the company, but the account of the
+        # res.partner (which is the supplier).
+        if ('partner_id' in values) and ('partner_bank_id' not in values):
             partner = self.env['res.partner'].browse(values['partner_id'])
-            company = self.env['res.users'].browse(self.env.uid).company_id
-            if partner and company:
+
+            # If it is an in_invoice or in_refund, we do not need the
+            # bank because the supplier will use his/her own bank.
+            company = None
+            if values.get('type') in ('out_invoice', 'out_refund'):
+                company = self.env.user.company_id
+
+            if partner:
                 partner_bank = self._get_partner_bank_id(partner, company)
-                values.update({'partner_bank_id': partner_bank.id})
+                if partner_bank:
+                    values.update({'partner_bank_id': partner_bank.id})
 
         return super(AccountInvoice, self).create(values)
 
@@ -74,7 +89,7 @@ class AccountInvoice(models.Model):
                             payment_term=False, partner_bank_id=False,
                             company_id=False):
         ''' Overwrites the implementation of l10n_ch_base_bank so that
-            we take into account the existance of LSV/DD bank accounts.
+            we take into account the existence of LSV/DD bank accounts.
         '''
         res = super(AccountInvoice, self).onchange_partner_id(
             invoice_type, partner_id,
@@ -83,13 +98,14 @@ class AccountInvoice(models.Model):
         )
         bank_id = False
         if partner_id:
+            partner = self.env['res.partner'].browse(partner_id)
             if invoice_type in ('in_invoice', 'in_refund'):
-                partner = self.env['res.partner'].browse(partner_id)
-                if partner.bank_ids:
-                    bank_id = partner.bank_ids[0].id
+                partner_bank = self._get_partner_bank_id(partner)
+                if partner_bank:
+                    bank_id = partner_bank.id
                 res['value']['partner_bank_id'] = bank_id
             else:
-                partner_bank = self._get_partner_bank_id(partner_id, self.env['uid'].company_id)
+                partner_bank = self._get_partner_bank_id(partner, self.env.user.company_id)
                 if partner_bank:
                     res['value']['partner_bank_id'] = partner_bank.id
                     bank_id = partner_bank.id
@@ -97,25 +113,27 @@ class AccountInvoice(models.Model):
             res['value']['partner_bank_id'] = bank_id
         return res
 
-#     @api.onchange('partner_id')
-#     def onchange_partner_id_lsv_dd(self):
-#         if self.partner_id:
-#             partner_bank = self._get_partner_bank_id(self.partner_id, self.env['uid'].company_id)
-#             if partner_bank:
-#                 self.partner_bank_id = partner_bank
-#         return True
-
-    def _get_partner_bank_id(self, partner, company):
+    def _get_partner_bank_id(self, partner, company=None):
         ''' Returns the bank account to set on the field 'partner_bank_id'
             of the invoice, which depends on the banks set for LSV and DD
-            on both the res.partner and the res.company. If it can not
-            make a match, it returns False.
+            on both the res.partner and the res.company.
+                If the company is None, then it may be because the invoice
+            is a supplier one (one of type 'in_invoice' or 'in_refund').
+            In that case, only the bank account for the res.partner
+            is used.
+                If it can not make a match, it returns False.
         '''
         partner_bank = False
-        if partner.lsv_bank_account_id and company.lsv_bank_account_id:
-            partner_bank = company.lsv_bank_account_id
-        elif partner.dd_bank_account_id and company.dd_bank_account_id:
-            partner_bank = company.dd_bank_account_id
+        if partner.lsv_bank_account_id:
+            if company and company.lsv_bank_account_id:
+                partner_bank = company.lsv_bank_account_id
+            else:
+                partner_bank = partner.lsv_bank_account_id
+        elif partner.dd_bank_account_id:
+            if company and company.dd_bank_account_id:
+                partner_bank = company.dd_bank_account_id
+            else:
+                partner_bank = partner.dd_bank_account_id
         return partner_bank
 
     @api.multi
