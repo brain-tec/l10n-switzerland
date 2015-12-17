@@ -28,6 +28,14 @@ class ResPartner(models.Model):
 
     _inherit = 'res.partner'
 
+    def get_top_parent(self):
+        ''' Returns the top parent of a parent hierarchy.
+        '''
+        top_parent = self
+        while top_parent.parent_id:
+            top_parent = top_parent.parent_id
+        return top_parent
+
     lsv_bank_account_id = fields.Many2one('res.partner.bank', 'Bank for LSV',
                                           help='The bank account to use '
                                                'for LSV payment files.')

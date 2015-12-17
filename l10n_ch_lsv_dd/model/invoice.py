@@ -124,16 +124,17 @@ class AccountInvoice(models.Model):
                 If it can not make a match, it returns False.
         '''
         partner_bank = False
-        if partner.lsv_bank_account_id:
+        top_parent = partner.get_top_parent()
+        if top_parent.lsv_bank_account_id:
             if company and company.lsv_bank_account_id:
                 partner_bank = company.lsv_bank_account_id
             else:
-                partner_bank = partner.lsv_bank_account_id
-        elif partner.dd_bank_account_id:
+                partner_bank = top_parent.lsv_bank_account_id
+        elif top_parent.dd_bank_account_id:
             if company and company.dd_bank_account_id:
                 partner_bank = company.dd_bank_account_id
             else:
-                partner_bank = partner.dd_bank_account_id
+                partner_bank = top_parent.dd_bank_account_id
         return partner_bank
 
     @api.multi
