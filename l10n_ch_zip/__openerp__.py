@@ -37,7 +37,7 @@
         'base_location',  # in https://github.com/OCA/partner-contact/
         'l10n_ch_states',  # in https://github.com/OCA/l10n-switzerland/
     ],
-    'data': ['l10n_ch_better_zip.xml'],
+    #'data': ['l10n_ch_better_zip.xml'], # For the Valaiscom project, we already import the better_zip data via data migration
     'images': [],
     'demo': [],
     'auto_install': False,
