@@ -77,19 +77,10 @@ class LsvExportWizard(models.TransientModel):
     )
 
     @api.multi
-    def generate_lsv_file(self):
-        ''' Generate direct debit export object including the lsv file
-            content. Called by generate button.
+    def _generate_lsv_file_content(self, payment_orders):
+        ''' Generates the LSV file corresponding to the payment.order(s)
+            received, and returns it as a string.
         '''
-        self.ensure_one()
-        payment_order_obj = self.env['payment.order']
-        payment_line_obj = self.env['payment.line']
-
-        active_ids = self.env.context.get('active_ids', [])
-        if not active_ids:
-            raise exceptions.ValidationError(_('No payment order selected'))
-        payment_orders = payment_order_obj.browse(active_ids)
-
         # common properties for all lines
         properties = self._setup_properties(payment_orders[0])
 
@@ -115,20 +106,30 @@ class LsvExportWizard(models.TransientModel):
                     properties.get('ben_iban')
                 )
 
-            order_by = ''
+            # Order payment_lines (taken from dd_export_wizard)
+            # Before this code was done by using a SQL, however this had
+            # the problem that no payment.lines were selected if they had
+            # no move.lines associated to it.
+            payment_lines = payment_order.line_ids.sorted(
+                lambda pl: pl.bank_id.id)
             if payment_order.date_prefered == 'due':
-                order_by = 'account_move_line.date_maturity ASC, '
-            order_by += 'payment_line.bank_id'
+                payment_lines = payment_lines.sorted(
+                    lambda pl: pl.move_line_id.date_maturity)
 
-            # A direct db query is used because order parameter in model.search
-            # doesn't support function fields
-            self.env.cr.execute(
-                'SELECT payment_line.id FROM payment_line, account_move_line '
-                'WHERE payment_line.move_line_id = account_move_line.id '
-                'AND payment_line.order_id = %s '
-                'ORDER BY ' + order_by, (payment_order.id,))
-            sorted_line_ids = [row[0] for row in self.env.cr.fetchall()]
-            payment_lines = payment_line_obj.browse(sorted_line_ids)
+#             order_by = ''
+#             if payment_order.date_prefered == 'due':
+#                 order_by = 'account_move_line.date_maturity ASC, '
+#             order_by += 'payment_line.bank_id'
+# 
+#             # A direct db query is used because order parameter in model.search
+#             # doesn't support function fields
+#             self.env.cr.execute(
+#                 'SELECT payment_line.id FROM payment_line, account_move_line '
+#                 'WHERE payment_line.move_line_id = account_move_line.id '
+#                 'AND payment_line.order_id = %s '
+#                 'ORDER BY ' + order_by, (payment_order.id,))
+#             sorted_line_ids = [row[0] for row in self.env.cr.fetchall()]
+#             payment_lines = payment_line_obj.browse(sorted_line_ids)
 
             for line in payment_lines:
                 if not line.mandate_id or not line.mandate_id.state == "valid":
@@ -150,6 +151,30 @@ class LsvExportWizard(models.TransientModel):
         file_content = ''.join(lsv_lines)  # Concatenate all lines
         file_content = ''.join(
             [ch if ord(ch) < 128 else '?' for ch in file_content])
+
+        return file_content, properties
+
+    @api.multi
+    def generate_lsv_file(self):
+        ''' Generate direct debit export object including the lsv file
+            content. Called by generate button.
+        '''
+        self.ensure_one()
+        payment_order_obj = self.env['payment.order']
+
+        active_ids = self.env.context.get('active_ids', [])
+        if not active_ids:
+            raise exceptions.ValidationError(_('No payment order selected'))
+
+        payment_orders = payment_order_obj.browse(active_ids)
+
+        # Computes the total amount.
+        total_amount = 0.0
+        for payment_order in payment_orders:
+            total_amount = total_amount + payment_order.total
+
+        file_content, properties = \
+            self._generate_lsv_file_content(payment_orders)
 
         export_id = self._create_lsv_export(active_ids,
                                             total_amount,

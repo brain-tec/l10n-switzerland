@@ -39,12 +39,12 @@ def get_treatment_date(prefered_type, line_mat_date, order_sched_date, name,
         payment_order_line data.
         Raises an error if treatment date is > today+30 or < today-10
     '''
-    today = datetime.today()
+    today = fields.Date.from_string(fields.Date.today())
     if prefered_type == 'due':
-        requested_date = fields.Datetime.from_string(line_mat_date) \
+        requested_date = fields.Date.from_string(line_mat_date) \
             or today
     elif prefered_type == 'fixed':
-        requested_date = fields.Datetime.from_string(order_sched_date) \
+        requested_date = fields.Date.from_string(order_sched_date) \
             or today
     elif prefered_type == 'now':
         requested_date = today

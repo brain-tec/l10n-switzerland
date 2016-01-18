@@ -54,10 +54,10 @@ class BankingExportChDd(models.Model):
 
     payment_order_ids = fields.Many2many(
         'payment.order',
-        'account_payment_order_ch_dd_rel',
-        'BankingExportChDd_id',
-        'account_order_id',
-        'Payment Orders',
+#         'account_payment_order_ch_dd_rel',
+#         'BankingExportChDd_id',
+#         'account_order_id',
+        string='Payment Orders',
         readonly=True
     )
     nb_transactions = fields.Integer(

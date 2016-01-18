@@ -19,8 +19,13 @@
 #
 ##############################################################################
 
+from . import date_utils
 from . import banking_export_ch_dd
 from . import bank
 from . import invoice
 from . import move_line
 from . import payment_order
+from . import company
+from . import partner
+from . import lsv_dd_error
+from . import payment_slip

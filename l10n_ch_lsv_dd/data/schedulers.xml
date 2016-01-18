@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data noupdate="1">
+        <record model="ir.cron" id="cronjob_send_lsv_dd">
+            <field name='name'>Send LSV and DD payment files</field>
+            <field name="active">False</field>
+        </record>
+    </data>
+    <data noupdate="0">
+        <record model="ir.cron" id="cronjob_send_lsv_dd">
+            <field name='interval_number'>5</field>
+            <field name='interval_type'>minutes</field>
+            <field name="numbercall">-1</field>
+            <field name="doall" eval="False" />
+            <field name="model">account.invoice</field>
+            <field name="function">send_lsv_dd</field>
+            <field name="args">()</field>
+        </record>
+    </data>
+    
+
+</openerp>

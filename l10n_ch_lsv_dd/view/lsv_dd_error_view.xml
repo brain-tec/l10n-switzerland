@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!-- Views. -->
+        <record id="lsv_dd_error_tree_view" model="ir.ui.view">
+            <field name="name">lsv.dd.error.tree.view</field>
+            <field name="model">lsv.dd.error</field>
+            <field name="arch" type="xml">
+                <tree string="LSV/DD Errors">
+                    <field name="date_error"/>
+                    <field name="payment_file_type"/>
+                    <field name="error_message"/>
+                </tree>
+            </field>
+        </record>
+        <record id="lsv_dd_error_form_view" model="ir.ui.view">
+            <field name="name">lsv.dd.error.form.view</field>
+            <field name="model">lsv.dd.error</field>
+            <field name="arch" type="xml">
+                <form string="LSV/DD Errors">
+                    <group colspan="4" string="LSV/DD Errors">
+                        <field name="date_error"/>
+                        <field name="payment_file_type"/>
+                        <field name="error_message"/>
+                    </group>
+                </form>
+            </field>
+        </record>
+
+        <!-- Action for the associated menu-item. -->
+        <record id="action_lsv_dd_error" model="ir.actions.act_window">
+            <field name="name">LSV/DD Errors</field>
+            <field name="type">ir.actions.act_window</field>
+            <field name="res_model">lsv.dd.error</field>
+            <field name="view_type">form</field>
+            <field name="view_mode">tree,form</field>
+        </record>
+
+        <!-- Action-to-view links. -->
+        <record id="action_lsv_dd_error_tree_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="0" />
+            <field name="view_mode">tree</field>
+            <field name="view_id" ref="lsv_dd_error_tree_view"/>
+            <field name="act_window_id" ref="action_lsv_dd_error"/>
+        </record>
+        <record id="action_lsv_dd_error_form_view" model="ir.actions.act_window.view">
+            <field name="sequence" eval="1" />
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="lsv_dd_error_form_view"/>
+            <field name="act_window_id" ref="action_lsv_dd_error"/>
+        </record>
+
+        <!-- Adds the menu-item. -->
+		<menuitem action="action_lsv_dd_error" id="lsv_dd_error_menu"
+			parent="account_payment.menu_main_payment" name="LSV/DD Errors"
+            sequence="1000"/>
+
+    </data>
+</openerp>
