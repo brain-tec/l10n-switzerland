@@ -1,0 +1,37 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+       <record model="ir.ui.view" id="company_form_view">
+            <field name="name">res.company.form.inherit.bvr</field>
+            <field name="model">res.company</field>
+            <field name="inherit_id" ref="base.view_company_form"/>
+            <field name="arch" type="xml">
+                <xpath expr="//notebook" position="inside">
+                    <page string="LSV/DD">
+                        <group colspan="4" string="Automated Sending">
+                            <field name="last_lsv_dd_send_date"/>
+                            <field name="lsv_dd_send_hour_start"/>
+                        </group>
+
+                        <group colspan="4" string="LSV">
+                            <field name="lsv_email_address"/>
+                            <field name="lsv_payment_mode"/>
+                            <field name="lsv_currency"/>
+                            <field name="lsv_bank_account_id"
+                                domain="[('partner_id','=',partner_id),
+                                         ('state','=','iban')]"/>
+                        </group>
+                        <group colspan="4" string="DD">
+                            <field name="dd_email_address"/>
+                            <field name="dd_payment_mode"/>
+                            <field name="dd_currency"/>
+                            <field name="dd_bank_account_id"
+                                domain="[('partner_id','=',partner_id),
+                                         ('state','=','bvr')]"/>
+                        </group>
+                    </page>
+                </xpath>
+            </field>
+        </record>
+    </data>
+</openerp>

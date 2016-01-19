@@ -1,0 +1,22 @@
+<?xml version="1.0"?>
+<openerp>
+    <data>
+        <record model="ir.ui.view" id="partner_form_view">
+            <field name="name">res.partner.form.inherit</field>
+            <field name="model">res.partner</field>
+            <field name="inherit_id" ref="account.view_partner_property_form"/>
+            <field name="arch" type="xml">
+                <field name="bank_ids" position="after">
+                    <group>
+                        <field name="lsv_bank_account_id"
+                            domain="[('partner_id','=',id),
+                                     ('state','=','iban')]"/>
+                        <field name="dd_bank_account_id"
+                            domain="[('partner_id','=',id),
+                                     ('state','=','bv')]"/>
+                    </group>
+                </field>
+            </field>
+        </record>
+    </data>
+</openerp>
