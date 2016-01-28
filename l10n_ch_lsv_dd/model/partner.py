@@ -18,7 +18,7 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
-from openerp import models, fields
+from openerp import models, fields, api
 
 
 class ResPartner(models.Model):
@@ -28,6 +28,7 @@ class ResPartner(models.Model):
 
     _inherit = 'res.partner'
 
+    @api.multi
     def get_top_parent(self):
         ''' Returns the top parent of a parent hierarchy.
         '''
@@ -35,6 +36,30 @@ class ResPartner(models.Model):
         while top_parent.parent_id:
             top_parent = top_parent.parent_id
         return top_parent
+
+    @api.multi
+    def get_bank_ids(self):
+        ''' This returns the bank_ids field of a res.partner,
+            of that of its partner, if its a contact and doesn't have
+            accounting-related data.
+        '''
+        return self.get_top_parent().bank_ids
+
+    @api.multi
+    def get_lsv_bank_account_id(self):
+        ''' This returns the lsv_bank_account_id field of a res.partner,
+            of that of its partner, if its a contact and doesn't have
+            accounting-related data.
+        '''
+        return self.get_top_parent().lsv_bank_account_id
+
+    @api.multi
+    def get_dd_bank_account_id(self):
+        ''' This returns the dd_bank_account_id field of a res.partner,
+            of that of its partner, if its a contact and doesn't have
+            accounting-related data.
+        '''
+        return self.get_top_parent().dd_bank_account_id
 
     lsv_bank_account_id = fields.Many2one('res.partner.bank', 'Bank for LSV',
                                           help='The bank account to use '

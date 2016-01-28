@@ -124,17 +124,16 @@ class AccountInvoice(models.Model):
                 If it can not make a match, it returns False.
         '''
         partner_bank = False
-        top_parent = partner.get_top_parent()
-        if top_parent.lsv_bank_account_id:
+        if partner.get_lsv_bank_account_id():
             if company and company.lsv_bank_account_id:
                 partner_bank = company.lsv_bank_account_id
             else:
-                partner_bank = top_parent.lsv_bank_account_id
-        elif top_parent.dd_bank_account_id:
+                partner_bank = partner.get_lsv_bank_account_id()
+        elif partner.get_dd_bank_account_id():
             if company and company.dd_bank_account_id:
                 partner_bank = company.dd_bank_account_id
             else:
-                partner_bank = top_parent.dd_bank_account_id
+                partner_bank = partner.get_dd_bank_account_id()
         return partner_bank
 
     @api.multi
@@ -286,9 +285,9 @@ class AccountInvoice(models.Model):
             # Creates the account.banking.mandate for the bank account
             # of the current partner.
             if payment_type == 'lsv':
-                partner_bank_id = partner.lsv_bank_account_id.id
+                partner_bank_id = partner.get_lsv_bank_account_id().id
             else:  # if payment_type == 'dd':
-                partner_bank_id = partner.dd_bank_account_id.id
+                partner_bank_id = partner.get_dd_bank_account_id().id
             banking_mandate_id = \
                 banking_mandate_obj.create({'partner_bank_id': partner_bank_id,
                                             'signature_date': now_date_str,
@@ -455,8 +454,6 @@ class AccountInvoice(models.Model):
             It attempts to send the files between the timeframe indicated
             in the res.company view, to allow for some delay in the scheduler.
         '''
-        return True
-
         # Gets the date of today as the user sees it (i.e. taking into
         # account its time-zone).
         now = fields.Datetime.context_timestamp(company, datetime.now())
@@ -489,6 +486,44 @@ class AccountInvoice(models.Model):
 
         return test_send_lsv_dd
 
+    @api.multi
+    def _get_pending_invoices_lsv_dd(self, company, payment_type):
+        ''' Gets the recordset of pending invoices to be considered in the
+            LSV/DD generation. Only the invoices for the received company,
+            and of the given payment type ('lsv' or 'dd') are considered.
+        '''
+        self._check_allowed_payment_types(payment_type)
+
+        is_lsv = False
+        is_dd = False
+
+        if payment_type == 'lsv':
+            is_lsv = True
+            payment_sent_flag = 'lsv_sent'
+            partner_bank_id = company.lsv_bank_account_id.id
+        else:  # if payment_type == 'dd':
+            is_dd = True
+            payment_sent_flag = 'dd_sent'
+            partner_bank_id = company.dd_bank_account_id.id
+
+        # Gets the open invoices from this company with the adequate bank set.
+        pending_invoices = self.search(
+            [('company_id', '=', company.id),
+             ('state', '=', 'open'),
+             (payment_sent_flag, '=', False),
+             ('partner_bank_id', '=', partner_bank_id),
+             ])
+
+        # Filters those invoices having a partner with no banks set.
+        filtered_pending_invoices_ids = []
+        for invoice in pending_invoices:
+            if (invoice.partner_id.get_bank_ids()) and \
+               ((is_lsv and invoice.partner_id.get_lsv_bank_account_id()) or
+               (is_dd and invoice.partner_id.get_dd_bank_account_id())):
+                filtered_pending_invoices_ids.append(invoice.id)
+
+        return self.search([('id', 'in', filtered_pending_invoices_ids)])
+
     @api.model
     def send_lsv_dd(self):
         ''' Iterates over all the paid invoices the LSV and DD payment files
@@ -501,37 +536,15 @@ class AccountInvoice(models.Model):
             if not self._test_send_lsv_dd(company):
                 continue
 
-            # Gets the paid invoices from this company.
-            open_invoices = self.search(
-                [('company_id', '=', company.id),
-                 ('state', '=', 'open'),
-                 ])
-
             # Whether to send the LSV payment files.
             if company.lsv_email_address:
-                lsv_company_account = company.lsv_bank_account_id
-
-                # Searches for those paid invoices for which their
-                # LSD payment file were not yet sent.
-                pending_invoices = self.search(
-                    [('id', 'in', open_invoices.ids),
-                     ('lsv_sent', '=', False),
-                     ('partner_bank_id', '=', lsv_company_account.id),
-                     ])
+                pending_invoices = self._get_pending_invoices_lsv_dd(company, 'lsv')
                 if pending_invoices:
                     pending_invoices._send_lsv(company.lsv_email_address)
 
             # Whether to send the DD payment files.
             if company.dd_email_address:
-                dd_company_account = company.dd_bank_account_id
-
-                # Searches for those paid invoices for which their
-                # DD payment file were not yet sent.
-                pending_invoices = self.search(
-                    [('id', 'in', open_invoices.ids),
-                     ('dd_sent', '=', False),
-                     ('partner_bank_id', '=', dd_company_account.id),
-                     ])
+                pending_invoices = self._get_pending_invoices_lsv_dd(company, 'dd')
                 if pending_invoices:
                     pending_invoices._send_dd(company.dd_email_address)
 
