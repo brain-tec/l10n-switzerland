@@ -357,10 +357,56 @@ class AccountInvoice(models.Model):
                 invoice.dd_sent = True
                 invoice.dd_sent_date = now_str
 
+            # Marks the invoice as having been paid, if it is required.
+            if company.dd_set_invoice_paid:
+                invoice._set_as_paid('dd')
+
         except Exception as e:
             lsv_dd_error_obj.add_error(str(e), 'dd')
 
         return True
+
+    @api.multi
+    def _set_as_paid(self, payment_type):
+        ''' Sets as paid an invoice. Emulates the behaviour of the wizard which
+            pays customer's invoices, but with the following peculiarities:
+            1) The payment method is taken from the payment mode indicated for
+               the DD or LSV payments.
+            2) The date of the payment is the due date of the invoice.
+            3) The period is automatically taken from the date (i.e. due date)
+               of the invoice.
+        '''
+        pass
+
+        account_voucher_obj = self.env['account.voucher']
+
+#         self._check_allowed_payment_types(payment_type)
+#         if payment_type == 'dd':
+#             journal_id = self._get_company().dd_payment_mode.journal.id
+#         else:  # if payment_file == 'lsv':
+#             journal_id = self._get_company().lsv_payment_mode.journal.id
+# 
+#         account_voucher_values = {'partner_id': self.partner_id.id,
+#                                   'amount': self.residual,
+#                                   'journal_id': journal_id.id,
+#                                   'date': self.date_due,
+#                                   }
+#         account_voucher = account_voucher_obj.create(account_voucher_values)
+
+#         view_dict = \
+#             super(AccountInvoice, self).invoice_pay_customer()
+#         context = view_dict['context']
+#         context.update({'default_journal_id': journal_id,
+#                         'default_date': self.date_due,
+#                         'default_amount': self.residual,
+#                         'default_narration': 'tttesttt',
+#                         'active_id': self.id,
+#                         'active_model': 'account.invoice',
+#                         'default_account_id': self.account_id.id,
+#                         })
+# 
+#         default_values = self.env['account.voucher'].with_context(context).default_get(self.env['account.voucher']._fields.keys())
+#         self.env['account.voucher'].with_context(context).create(default_values)
 
     @api.multi
     def _send_lsv(self, lsv_email_address):
@@ -409,6 +455,8 @@ class AccountInvoice(models.Model):
             It attempts to send the files between the timeframe indicated
             in the res.company view, to allow for some delay in the scheduler.
         '''
+        return True
+
         # Gets the date of today as the user sees it (i.e. taking into
         # account its time-zone).
         now = fields.Datetime.context_timestamp(company, datetime.now())

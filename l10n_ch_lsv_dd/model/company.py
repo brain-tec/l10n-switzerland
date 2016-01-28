@@ -96,3 +96,8 @@ class ResCompany(models.Model):
     dd_bank_account_id = fields.Many2one('res.partner.bank', 'Bank for DD',
                                          help='The bank account to use for DD '
                                               'payment files.')
+
+    dd_set_invoice_paid = fields.Boolean('Set Invoice as Paid?', default=False,
+                                         help='If checked, marks the invoice '
+                                              'as paid after the DD payment '
+                                              'file has been generated.')
