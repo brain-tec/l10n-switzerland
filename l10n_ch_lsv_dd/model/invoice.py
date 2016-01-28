@@ -454,6 +454,9 @@ class AccountInvoice(models.Model):
             It attempts to send the files between the timeframe indicated
             in the res.company view, to allow for some delay in the scheduler.
         '''
+        #TODO: Comment-out the following line before pushing the branch.
+#         return True
+
         # Gets the date of today as the user sees it (i.e. taking into
         # account its time-zone).
         now = fields.Datetime.context_timestamp(company, datetime.now())
