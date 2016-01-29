@@ -28,7 +28,7 @@
                             <field name="dd_bank_account_id"
                                 domain="[('partner_id','=',partner_id),
                                          ('state','=','bvr')]"/>
-                            <field name="dd_set_invoice_paid" invisible="1"/>
+                            <field name="dd_set_invoice_paid"/>
                         </group>
                     </page>
                 </xpath>
