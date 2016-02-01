@@ -382,13 +382,13 @@ class AccountInvoice(models.Model):
         # The journal to use is the one of the payment mode selected.
         self._check_allowed_payment_types(payment_type)
         if payment_type == 'dd':
-            journal_id = self._get_company().dd_payment_mode.journal.id
+            journal = self._get_company().dd_payment_mode.journal
         else:  # if payment_file == 'lsv':
-            journal_id = self._get_company().lsv_payment_mode.journal.id
+            journal = self._get_company().lsv_payment_mode.journal
 
         # Takes the default values for an account voucher, which depend on
         # the journal set in the context.
-        context_default_get = {'journal_id': journal_id}
+        context_default_get = {'journal_id': journal.id}
         default_values = \
             account_voucher_obj.with_context(context_default_get).\
             default_get(['currency_id',
@@ -405,14 +405,14 @@ class AccountInvoice(models.Model):
         # Stores the values to be used when calling create()
         account_voucher_values = {'partner_id': self.partner_id.id,
                                   'amount': invoice_amount,
-                                  'journal_id': journal_id,
+                                  'journal_id': journal.id,
                                   'date': invoice_date,
                                   }
 
         # Calls the on-change for the partner_id.
         onchange_partner_id_data = \
             account_voucher_obj.onchange_partner_id(self.partner_id.id,
-                                                    journal_id,
+                                                    journal.id,
                                                     invoice_amount,
                                                     default_values['currency_id'],
                                                     invoice_type,
@@ -424,7 +424,7 @@ class AccountInvoice(models.Model):
             account_voucher_obj.onchange_amount(invoice_amount,
                                                 default_values['payment_rate'],
                                                 self.partner_id.id,
-                                                journal_id,
+                                                journal.id,
                                                 default_values['currency_id'],
                                                 invoice_type,
                                                 invoice_date,
@@ -448,7 +448,7 @@ class AccountInvoice(models.Model):
 
         # Calls the on_change over the journal.
         onchange_journal_id_data = \
-            account_voucher_obj.onchange_journal(journal_id,
+            account_voucher_obj.onchange_journal(journal.id,
                                                  credit_line_ids,
                                                  default_values['tax_id'],
                                                  self.partner_id.id,
@@ -458,14 +458,19 @@ class AccountInvoice(models.Model):
                                                  self.company_id.id)['value']
         account_voucher_values.update(onchange_journal_id_data)
 
+        # Gets the sequence-generated number for the account.voucher.
+        account_journal_seq = journal.sequence_id
+        number = self.env['ir.sequence'].get(account_journal_seq.code)
+
         create_vals = {
+            'number': number,
             'message_follower_ids': False,  #r?
             'line_cr_ids': False,  #credit_line_ids,
             'line_dr_ids': False,  #debit_line_ids,
             'payment_rate_currency_id': account_voucher_values['payment_rate_currency_id'],
             'reference': False,  #r?
             'company_id': self._get_company().id,
-            'journal_id': journal_id,
+            'journal_id': journal.id,
             'narration': False,
             'partner_id': account_voucher_values['partner_id'],
             'message_ids': False,
@@ -487,7 +492,7 @@ class AccountInvoice(models.Model):
             line_values = line[-1]
             line_values.update({'voucher_id': account_voucher.id})
             account_voucher_line_obj.create(line_values)
-        print 'a'
+#         print 'a'
 
     @api.multi
     def _send_lsv(self, lsv_email_address):
@@ -537,7 +542,7 @@ class AccountInvoice(models.Model):
             in the res.company view, to allow for some delay in the scheduler.
         '''
         #TODO: Comment-out the following line before pushing the branch.
-        return True
+#         return True
 
         # Gets the date of today as the user sees it (i.e. taking into
         # account its time-zone).
