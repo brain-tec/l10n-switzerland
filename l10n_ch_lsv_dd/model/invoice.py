@@ -22,7 +22,7 @@
 import base64
 from datetime import datetime, timedelta
 from date_utils import is_weekday, is_past_weekday
-from openerp import models, api, _, exceptions, fields, SUPERUSER_ID
+from openerp import models, api, _, exceptions, fields, SUPERUSER_ID, workflow
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
 
@@ -361,51 +361,149 @@ class AccountInvoice(models.Model):
                 invoice._set_as_paid('dd')
 
         except Exception as e:
+            raise e
             lsv_dd_error_obj.add_error(str(e), 'dd')
 
         return True
 
     @api.multi
     def _set_as_paid(self, payment_type):
-        ''' Sets as paid an invoice. Emulates the behaviour of the wizard which
-            pays customer's invoices, but with the following peculiarities:
+        ''' Sets as paid an invoice by creating an account.voucher.
             1) The payment method is taken from the payment mode indicated for
                the DD or LSV payments.
             2) The date of the payment is the due date of the invoice.
             3) The period is automatically taken from the date (i.e. due date)
                of the invoice.
         '''
-        pass
-
         account_voucher_obj = self.env['account.voucher']
+        account_voucher_line_obj = self.env['account.voucher.line']
+        account_period_obj = self.env['account.period']
 
-#         self._check_allowed_payment_types(payment_type)
-#         if payment_type == 'dd':
-#             journal_id = self._get_company().dd_payment_mode.journal.id
-#         else:  # if payment_file == 'lsv':
-#             journal_id = self._get_company().lsv_payment_mode.journal.id
-# 
-#         account_voucher_values = {'partner_id': self.partner_id.id,
-#                                   'amount': self.residual,
-#                                   'journal_id': journal_id.id,
-#                                   'date': self.date_due,
-#                                   }
-#         account_voucher = account_voucher_obj.create(account_voucher_values)
+        # The journal to use is the one of the payment mode selected.
+        self._check_allowed_payment_types(payment_type)
+        if payment_type == 'dd':
+            journal = self._get_company().dd_payment_mode.journal
+        else:  # if payment_file == 'lsv':
+            journal = self._get_company().lsv_payment_mode.journal
 
-#         view_dict = \
-#             super(AccountInvoice, self).invoice_pay_customer()
-#         context = view_dict['context']
-#         context.update({'default_journal_id': journal_id,
-#                         'default_date': self.date_due,
-#                         'default_amount': self.residual,
-#                         'default_narration': 'tttesttt',
-#                         'active_id': self.id,
-#                         'active_model': 'account.invoice',
-#                         'default_account_id': self.account_id.id,
-#                         })
-# 
-#         default_values = self.env['account.voucher'].with_context(context).default_get(self.env['account.voucher']._fields.keys())
-#         self.env['account.voucher'].with_context(context).create(default_values)
+        invoice_amount = self.type in ('out_refund', 'in_refund') \
+            and -self.residual or self.residual
+        invoice_type = self.type in ('out_invoice', 'out_refund') \
+            and 'receipt' or 'payment'
+        invoice_date = self.date_due
+
+        # Takes the default values for an account voucher, which depend on
+        # the journal set in the context.
+        context_default_get = {'journal_id': journal.id}
+        default_values = \
+            account_voucher_obj.with_context(context_default_get).\
+            default_get(['currency_id',
+                         'tax_id',
+                         'payment_rate',
+                         'payment_rate_currency_id',
+                         ])
+
+        # Stores the values to be used when calling create()
+        account_voucher_values = {'partner_id': self.partner_id.id,
+                                  'amount': invoice_amount,
+                                  'journal_id': journal.id,
+                                  'date': invoice_date,
+                                  }
+
+        # Calls the on-change for the partner_id.
+        onchange_partner_id_data = \
+            account_voucher_obj.onchange_partner_id(self.partner_id.id,
+                                                    journal.id,
+                                                    invoice_amount,
+                                                    default_values['currency_id'],
+                                                    invoice_type,
+                                                    invoice_date)['value']
+        account_voucher_values.update(onchange_partner_id_data)
+
+        # Calls the on_change over the amount.
+        onchange_amount_data = \
+            account_voucher_obj.onchange_amount(invoice_amount,
+                                                default_values['payment_rate'],
+                                                self.partner_id.id,
+                                                journal.id,
+                                                default_values['currency_id'],
+                                                invoice_type,
+                                                invoice_date,
+                                                default_values['payment_rate_currency_id'],
+                                                self.company_id.id)['value']
+        account_voucher_values.update(onchange_amount_data)
+
+        # Computes the lines to be added as credit lines.
+        # This is needed to 1) call an on_change, and 2) create the lines.
+        credit_line_ids = []
+        for credit_line in onchange_partner_id_data['line_cr_ids']:
+            if credit_line['name'] == self.move_id.ref:
+                credit_line_ids.append((0, 0, {'date_due': invoice_date,
+                                               'reconcile': True,
+                                               'date_original': self.date_invoice,
+                                               'move_line_id': credit_line['move_line_id'],
+                                               'amount_original': invoice_amount,
+                                               'amount': invoice_amount,
+                                               'amount_unreconciled': invoice_amount,
+                                               'account_id': credit_line['account_id'],
+                                               'type': 'cr',
+                                               }))
+
+        # Calls the on_change over the journal.
+        onchange_journal_id_data = \
+            account_voucher_obj.onchange_journal(journal.id,
+                                                 credit_line_ids,
+                                                 default_values['tax_id'],
+                                                 self.partner_id.id,
+                                                 invoice_date,
+                                                 invoice_amount,
+                                                 invoice_type,
+                                                 self.company_id.id)['value']
+        account_voucher_values.update(onchange_journal_id_data)
+
+        # Computes the period associated to a given date.
+        period = account_period_obj.find(invoice_date)
+        if period:
+            account_voucher_values.update({'period_id': period.id})
+
+        # Creates the account.voucher.
+        create_vals = {
+            # 'message_follower_ids': False,
+            # 'line_cr_ids': False,
+            # 'line_dr_ids': False,
+            'payment_rate_currency_id': account_voucher_values['payment_rate_currency_id'],
+            # 'reference': False,
+            'company_id': self._get_company().id,
+            'journal_id': journal.id,
+            # 'narration': False,
+            'partner_id': account_voucher_values['partner_id'],
+            # 'message_ids': False,
+            'is_multi_currency': False,
+            'payment_rate': account_voucher_values['payment_rate'],
+            'type': invoice_type,
+            'payment_option': 'without_writeoff',
+            'account_id': account_voucher_values['account_id'],
+            'period_id': account_voucher_values['period_id'],
+            'date': fields.Date.today(),
+            # 'audit': False,
+            # 'name': False,
+            # 'analytic_id': False,
+            'amount': invoice_amount,
+        }
+        account_voucher = account_voucher_obj.create(create_vals)
+
+        # Creates the lines for the account.voucher.
+        for line in credit_line_ids:
+            line_values = line[-1]
+            line_values.update({'voucher_id': account_voucher.id})
+            account_voucher_line_obj.create(line_values)
+
+        # Validates the account.voucher.
+        workflow.trg_validate(self.env.uid, 'account.voucher',
+                              account_voucher.id, 'proforma_voucher',
+                              self.env.cr)
+
+        return True
 
     @api.multi
     def _send_lsv(self, lsv_email_address):
@@ -455,7 +553,7 @@ class AccountInvoice(models.Model):
             in the res.company view, to allow for some delay in the scheduler.
         '''
         #TODO: Comment-out the following line before pushing the branch.
-#         return True
+        #return True
 
         # Gets the date of today as the user sees it (i.e. taking into
         # account its time-zone).
