@@ -361,8 +361,8 @@ class AccountInvoice(models.Model):
                 invoice._set_as_paid('dd')
 
         except Exception as e:
-            raise e
             lsv_dd_error_obj.add_error(str(e), 'dd')
+            raise e
 
         return True
 
@@ -542,6 +542,7 @@ class AccountInvoice(models.Model):
 
         except Exception as e:
             lsv_dd_error_obj.add_error(str(e), 'lsv')
+            raise e
 
         return True
 
@@ -552,7 +553,7 @@ class AccountInvoice(models.Model):
             It attempts to send the files between the timeframe indicated
             in the res.company view, to allow for some delay in the scheduler.
         '''
-        #TODO: Comment-out the following line before pushing the branch.
+        #TODO: Comment the following line before pushing the branch.
         #return True
 
         # Gets the date of today as the user sees it (i.e. taking into
