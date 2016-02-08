@@ -404,7 +404,11 @@ class AccountInvoice(models.Model):
                          ])
 
         # Stores the values to be used when calling create()
-        account_voucher_values = {'partner_id': self.partner_id.id,
+        # If we pay as a contact, we call the on_hange over the partner
+        # so that the credit lines are filled (if called over a contact,
+        # the credit lines are not filled)
+        partner_id = self.partner_id.commercial_partner_id.id
+        account_voucher_values = {'partner_id': partner_id,
                                   'amount': invoice_amount,
                                   'journal_id': journal.id,
                                   'date': invoice_date,
@@ -412,7 +416,7 @@ class AccountInvoice(models.Model):
 
         # Calls the on-change for the partner_id.
         onchange_partner_id_data = \
-            account_voucher_obj.onchange_partner_id(self.partner_id.id,
+            account_voucher_obj.onchange_partner_id(account_voucher_values['partner_id'],
                                                     journal.id,
                                                     invoice_amount,
                                                     default_values['currency_id'],
