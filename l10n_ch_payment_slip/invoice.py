@@ -18,6 +18,7 @@
 #
 ##############################################################################
 from openerp import models, fields, api
+from openerp.tools import mod10r
 
 
 class AccountMoveLine(models.Model):
@@ -154,3 +155,19 @@ class AccountInvoice(models.Model):
                     self._action_bvr_number_move_line(pay_slip.move_line_id,
                                                       ref)
         return res
+
+    @api.multi
+    def get_bvr_ref(self):
+        """Retrieve ESR/BVR reference form invoice in order to print it"""
+        res = ''
+        self.ensure_one()
+        ## We check if the type is bvr, if not we return false
+        if self.partner_bank_id.state != 'bvr':
+            return ''
+        ##
+        if self.partner_bank_id.bvr_adherent_num:
+            res = self.partner_bank_id.bvr_adherent_num
+        invoice_number = ''
+        if self.number:
+            invoice_number = self._compile_get_ref.sub('', self.number)
+        return mod10r(res + invoice_number.rjust(26 - len(res), '0'))
