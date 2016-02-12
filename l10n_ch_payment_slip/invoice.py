@@ -17,6 +17,8 @@
 #    along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #
 ##############################################################################
+import re
+
 from openerp import models, fields, api
 from openerp.tools import mod10r
 
@@ -38,6 +40,8 @@ class AccountInvoice(models.Model):
     printing functionnalites. BVR is a Swiss payment vector"""
 
     _inherit = "account.invoice"
+
+    _compile_get_ref = re.compile('[^0-9]')
 
     @api.model
     def _get_reference_type(self):
