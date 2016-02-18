@@ -356,9 +356,9 @@ class AccountInvoice(models.Model):
                 invoice.dd_sent = True
                 invoice.dd_sent_date = now_str
 
-            # Marks the invoice as having been paid, if it is required.
-            if company.dd_set_invoice_paid:
-                invoice._set_as_paid('dd')
+                # Marks the invoice as having been paid, if it is required.
+                if company.dd_set_invoice_paid:
+                    invoice._set_as_paid('dd')
 
         except Exception as e:
             lsv_dd_error_obj.add_error(str(e), 'dd')
