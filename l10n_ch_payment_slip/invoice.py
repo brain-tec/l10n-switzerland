@@ -168,7 +168,6 @@ class AccountInvoice(models.Model):
         # We check if the type is bvr, if not we return false
         if self.partner_bank_id.state != 'bvr':
             return ''
-        #
         if self.partner_bank_id.bvr_adherent_num:
             res = self.partner_bank_id.bvr_adherent_num
         invoice_number = ''
