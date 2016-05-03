@@ -54,16 +54,78 @@ def migrate(cr, version):
         new_state = cr.fetchone()
 
         logger.info(
-            "Updating res_better_zip from id %s to id %s",
+            "Updating state_id from id %s to id %s",
             old_state, new_state
         )
+
+        cr.execute("UPDATE res_partner "
+                   "SET state_id = %s"
+                   "WHERE state_id = %s", (new_state, old_state))
 
         cr.execute("UPDATE res_better_zip "
                    "SET state_id = %s "
                    "WHERE state_id = %s;", (new_state, old_state))
 
+        #check if bt_swissdec is not in state 'uninstalled' -> bt_swissdec is installed
+        cr.execute("SELECT id "
+                   "FROM ir_module_module "
+                   "WHERE name = 'bt_swissdec' "
+                   "AND state != 'uninstalled';")
+        bt_swissdec_installed = cr.fetchone()
+        #do some updates if bt_swissdec is installed
+        if bt_swissdec_installed:
+            print 'TRUE bt_swissdec_installed'
+            print 'update state_id from res_company_fak'
+            cr.execute("UPDATE res_company_fak "
+                   "SET state_id = %s "
+                   "WHERE state_id = %s;", (new_state, old_state))
+            print 'update state_id from res_company_bur'
+            cr.execute("UPDATE res_company_bur "
+                   "SET state_id = %s "
+                   "WHERE state_id = %s;", (new_state, old_state))
+            print 'update state_id from res_company_qst'
+            cr.execute("UPDATE res_company_qst "
+                   "SET state_id = %s "
+                   "WHERE state_id = %s;", (new_state, old_state))
+            print 'update spesen_stv_state_id from hr_employee_year'
+            cr.execute("UPDATE hr_employee_year "
+                   "SET spesen_stv_state_id = %s "
+                   "WHERE spesen_stv_state_id = %s;", (new_state, old_state))
+            print 'update privat_fz_state_id from hr_employee_year'
+            cr.execute("UPDATE hr_employee_year "
+                   "SET privat_fz_state_id = %s "
+                   "WHERE privat_fz_state_id = %s;", (new_state, old_state))
+            print 'update verkehrswert_stv_ok_state_id from hr_employee_year'
+            cr.execute("UPDATE hr_employee_year "
+                   "SET verkehrswert_stv_ok_state_id = %s "
+                   "WHERE verkehrswert_stv_ok_state_id = %s;", (new_state, old_state))
+            print 'update qst_state_id from hr_employee_calculationparameter_qst'
+            cr.execute("UPDATE hr_employee_calculationparameter_qst "
+                   "SET qst_state_id = %s "
+                   "WHERE qst_state_id = %s;", (new_state, old_state))
+            print 'update partner_working_state_id from hr_employee_calculationparameter_qst'
+            cr.execute("UPDATE hr_employee_calculationparameter_qst "
+                   "SET partner_working_state_id = %s "
+                   "WHERE partner_working_state_id = %s;", (new_state, old_state))
+            print 'update spesen_stv_state_id from res_company_year'
+            cr.execute("UPDATE res_company_year "
+                   "SET spesen_stv_state_id = %s "
+                   "WHERE spesen_stv_state_id = %s;", (new_state, old_state))
+            print 'update privat_fz_state_id from res_company_year'
+            cr.execute("UPDATE res_company_year "
+                   "SET privat_fz_state_id = %s "
+                   "WHERE privat_fz_state_id = %s;", (new_state, old_state))
+            print 'update verkehrswert_stv_ok_state_id from res_company_year'
+            cr.execute("UPDATE res_company_year "
+                   "SET verkehrswert_stv_ok_state_id = %s "
+                   "WHERE verkehrswert_stv_ok_state_id = %s;", (new_state, old_state))
+
         cr.execute("DELETE FROM res_country_state "
                    "WHERE id = %s;", (old_state,))
+
+    logger.info(
+        "Delete old states from ir_model_data"
+    )
 
     cr.execute("DELETE FROM ir_model_data "
                "WHERE module = 'l10n_ch_zip' "
