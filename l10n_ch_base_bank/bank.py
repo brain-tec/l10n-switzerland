@@ -144,10 +144,8 @@ class Bank(models.Model, BankCommon):
                         break
         else:
             ids = self.search(
-                        args,
-                        limit=limit
-                    ).ids
-        
+                limit=limit
+                ).ids
         # we sort by occurence
         to_ret_ids = list(set(ids))
         to_ret_ids = sorted(
