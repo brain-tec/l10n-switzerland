@@ -8,8 +8,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: l10n-switzerland (9.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2016-05-27 02:48+0000\n"
-"PO-Revision-Date: 2016-05-26 13:58+0000\n"
+"POT-Creation-Date: 2016-09-08 10:38+0000\n"
+"PO-Revision-Date: 2016-09-09 11:33+0000\n"
 "Last-Translator: OCA Transbot <transbot@odoo-community.org>\n"
 "Language-Team: Italian (http://www.transifex.com/oca/OCA-l10n-switzerland-9-0/language/it/)\n"
 "MIME-Version: 1.0\n"
@@ -120,7 +120,7 @@ msgstr "Created on"
 #: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_report_one_slip_per_page_from_invoice_display_name
 #: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_v11_import_wizard_display_name
 msgid "Display Name"
-msgstr ""
+msgstr "Nome da visualizzare"
 
 #. module: l10n_ch_payment_slip
 #: model:ir.model.fields,help:l10n_ch_payment_slip.field_res_company_bvr_add_horz
@@ -175,7 +175,7 @@ msgstr ""
 #: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_report_one_slip_per_page_from_invoice___last_update
 #: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_v11_import_wizard___last_update
 msgid "Last Modified on"
-msgstr ""
+msgstr "Ultima modifica il"
 
 #. module: l10n_ch_payment_slip
 #: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_l10n_ch_payment_slip_write_uid
@@ -315,13 +315,13 @@ msgid "Slip Image"
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/models/invoice.py:158
+#: code:addons/l10n_ch_payment_slip/models/invoice.py:167
 #, python-format
 msgid "The bank account {} used in invoice has no BVR/ESR adherent number."
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/models/invoice.py:162
+#: code:addons/l10n_ch_payment_slip/models/invoice.py:171
 #, python-format
 msgid ""
 "The bank account {} used in invoice needs to be a postal account or have a "
@@ -329,13 +329,13 @@ msgid ""
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/models/invoice.py:152
+#: code:addons/l10n_ch_payment_slip/models/invoice.py:161
 #, python-format
 msgid "The invoice must be confirmed."
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/models/invoice.py:155
+#: code:addons/l10n_ch_payment_slip/models/invoice.py:164
 #, python-format
 msgid "The invoice needs a partner bank account."
 msgstr ""
