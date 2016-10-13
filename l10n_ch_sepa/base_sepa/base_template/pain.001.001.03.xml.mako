@@ -24,31 +24,36 @@
   line is saved in sepa_context in order to be available
   in sub blocks and inheritages. Because, for now, only unamed
   blocks and def in mako can use a local for loop variable.
-</%doc>\
+</%doc>
+<%
+first_line = order.line_ids[0] if order.line_ids else None
+today = thetime.strftime("%Y-%m-%d")
+%>
+<% sepa_context['line'] = first_line %>\
+<%block name="PmtInf">\
+<%
+line = sepa_context['line']
+today = thetime.strftime("%Y-%m-%d")
+%>
+<PmtInf>
+    <PmtInfId>${line.name if line else ''}</PmtInfId>
+    <PmtMtd>${order.mode.payment_method if order.mode else ''}</PmtMtd>
+    <BtchBookg>${'true' if order.mode and order.mode.batchbooking else 'false'}</BtchBookg>
+    <ReqdExctnDt>${(line.date > today and line.date or today) if line else ''}</ReqdExctnDt>
+    <Dbtr>
+      <Nm>${order.user_id.company_id.name}</Nm>\
+      ${self.address(order.user_id.company_id.partner_id)}\
+    </Dbtr>
+    <DbtrAcct>\
+      ${self.acc_id(order.mode.bank_id)}\
+    </DbtrAcct>
+    <DbtrAgt>
+      <FinInstnId>
+        <BIC>${order.mode.bank_id.bank.bic or order.mode.bank_id.bank_bic}</BIC>
+      </FinInstnId>
+    </DbtrAgt>
 % for line in order.line_ids:
-  <% sepa_context['line'] = line %>\
-  <%block name="PmtInf">\
-    <%
-    line = sepa_context['line']
-    today = thetime.strftime("%Y-%m-%d")
-    %>
-      <PmtInf>
-        <PmtInfId>${line.name}</PmtInfId>
-        <PmtMtd>TRF</PmtMtd>
-        <BtchBookg>false</BtchBookg>
-        <ReqdExctnDt>${line.date > today and line.date or today}</ReqdExctnDt>
-        <Dbtr>
-          <Nm>${order.user_id.company_id.name}</Nm>\
-          ${self.address(order.user_id.company_id.partner_id)}\
-        </Dbtr>
-        <DbtrAcct>\
-          ${self.acc_id(order.mode.bank_id)}\
-        </DbtrAcct>
-        <DbtrAgt>
-          <FinInstnId>
-            <BIC>${order.mode.bank_id.bank.bic or order.mode.bank_id.bank_bic}</BIC>
-          </FinInstnId>
-        </DbtrAgt>
+
         <CdtTrfTxInf>
           <PmtId>
             <EndToEndId>${line.name}</EndToEndId>
@@ -79,9 +84,12 @@
           </CdtrAcct>\
           <%block name="RmtInf"/>
         </CdtTrfTxInf>
-      </PmtInf>\
-  </%block>
+
 % endfor
+
+</PmtInf>\
+</%block>
+
 \
   </CstmrCdtTrfInitn>
 </Document>
