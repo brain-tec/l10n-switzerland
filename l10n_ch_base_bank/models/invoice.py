@@ -36,7 +36,7 @@ class AccountInvoice(models.Model):
                 if not (bank_acc.acc_type == 'postal' or
                         bank_acc.acc_type != 'postal' and
                         bank_acc.bank_id.ccp):
-                    if invoice.type in ('in_invoice', 'in_refund')
+                    if invoice.type in ('in_invoice', 'in_refund'):
                         raise exceptions.ValidationError(
                             _('BVR/ESR Reference type needs a postal account'
                               ' number on the customer.')
