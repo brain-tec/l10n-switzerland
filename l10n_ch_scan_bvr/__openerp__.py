@@ -15,7 +15,6 @@
         "l10n_ch_payment_slip",
     ],
     "data": [
-        "account_minimal_test.xml",
         "wizard/scan_bvr_view.xml",
         "views/partner_view.xml",
         "views/bank_view.xml"],
