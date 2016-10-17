@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
+# b-*- encoding: utf-8 -*-
 ##############################################################################
 #
-#    Author: Yannick Vaucher
-#    Copyright 2011 Camptocamp SA
+#    Copyright (c) 2015 brain-tec AG (http://www.braintec-group.com)
+#    All Right Reserved
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -19,4 +19,20 @@
 #
 ##############################################################################
 
-import payment_mode_ext
+
+from openerp import models, fields, api, _
+
+
+PAYMENT_METHOD_SELECTION = [('TRF', 'Credit Transfer'),
+                            ('TRA', 'Transfer Advise')]
+
+
+class PaymentModeExt(models.Model):
+
+    _inherit = 'payment.mode'
+
+    payment_method = fields.Selection(PAYMENT_METHOD_SELECTION,
+                                      default='TRA',
+                                      string='Payment Method')
+
+    batchbooking = fields.Boolean(string='Batchbooking')
