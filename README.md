@@ -101,3 +101,9 @@ addon | version | summary
 Translation Status
 ------------------
 [![Transifex Status](https://www.transifex.com/projects/p/OCA-l10n-switzerland-8-0/chart/image_png)](https://www.transifex.com/projects/p/OCA-l10n-switzerland-8-0)
+
+Configuration options
+------------------
+In old versions some mako files are calling camptocamp_logo logo file. 
+In this case, we should go to Settings -> Report -> Webkit -> Webkit Logo and create camptocamp_logo.png with the picture of the company. 
+
