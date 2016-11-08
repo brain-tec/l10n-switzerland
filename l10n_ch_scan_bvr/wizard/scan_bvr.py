@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Author: Nicolas Bessi Vincent Renaville
-# (c) 2013 Camptocamp SA
-# (c) 2015 Alex Comba - Agile Business Group
-# (c) 2016 Alvaro Estebanez - Brain-tec AG
+# Copyright 2013 Camptocamp SA
+# Copyright 2015 Alex Comba - Agile Business Group
+# Copyright 2016 Alvaro Estebanez - Brain-tec AG
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0.html
 
 from openerp import api, fields, models, _
@@ -31,12 +31,12 @@ class ScanBvr(models.TransientModel):
     def _default_journal(self):
         if self.env.user.company_id:
             # We will get purchase journal linked with this company
-            journal_ids = self.env['account.journal'].search(
+            journals = self.env['account.journal'].search(
                 [('type', '=', 'purchase'),
                  ('company_id', '=', self.env.user.company_id.id)],
             )
-            if len(journal_ids) == 1:
-                return journal_ids[0]
+            if len(journals) == 1:
+                return journals[0]
             else:
                 return False
         else:
@@ -187,7 +187,6 @@ class ScanBvr(models.TransientModel):
     def _create_direct_invoice(self, data):
         # We will call the function, that create invoice line
         invoice_model = self.env['account.invoice']
-        invoice_tax_model = self.env['account.invoice.tax']
         currency_model = self.env['res.currency']
         today = fields.Date.today()
         if data['bank_account']:
@@ -201,29 +200,14 @@ class ScanBvr(models.TransientModel):
         payment_term_id = (account_info.partner_id.
                            property_supplier_payment_term_id.id)
         if payment_term_id:
-            # We Calculate due_date
-            my_vals = {
-                'payment_term_id': payment_term_id,
-                'date_due': today,
-                'date_invoice': today,
-            }
-            specs = {'date_invoice': '1',
-                     'payment_term_id': '1',
-                     }
-            default_values = invoice_model.default_get(specs)
-            invoice_vals = specs.copy()
-            invoice_vals.update(default_values)
-            invoice_vals.update(my_vals)
-            res = invoice_model.onchange(invoice_vals, ['payment_term_id'], specs)
-            value = res.get('value', {})
-
-            for name, val in value.iteritems():
-
-                if isinstance(val, tuple):
-                    value[name] = val[0]
-
-                    res.update(value)
-            date_due = res['value']['date_due']
+            # We Calculate @due_date
+            with self.env.do_in_onchange():
+                virtual_inv = self.env['account.invoice'].new({
+                    'date_invoice': today,
+                    'payment_term_id': payment_term_id,
+                })
+                virtual_inv._onchange_payment_term_date_invoice()
+                date_due = virtual_inv.date_due
 
         invoice_vals = {
             'name': today,
@@ -353,31 +337,11 @@ class ScanBvr(models.TransientModel):
         partner_bank = False
         # We will now search the account linked with this BVR
         if data['bvr_struct']['domain'] == 'name':
-            domain = [('acc_number', '=', data['bvr_struct']['beneficiaire'])]
-            partners_bank = partner_bank_model.search(domain)
-            partner_bank = len(partners_bank) == 1 and partners_bank[0]
+            domain = [('ccp', '=', data['bvr_struct']['beneficiaire'])]
         else:
-            # A postal account that refers to a bank is uniquely identified
-            # by (beneficiaire + bvrnumber), at least by beneficiaire
-            domain = [('acc_number', '=', data['bvr_struct']['beneficiaire'])]
-            partners_bank = partner_bank_model.search(domain)
-            if len(partners_bank) == 1:
-                if (
-                        not partners_bank[0].bvr_adherent_num or
-                        partners_bank[0].bvr_adherent_num ==
-                        data['bvr_struct']['bvrnumber']):
-                    partner_bank = partners_bank
-            elif len(partners_bank) > 1:
-                # We need to filter further by bvr_adherent_num
-                partners_bank = partners_bank.filtered(
-                    lambda r:
-                    r.bvr_adherent_num == data['bvr_struct']['bvrnumber'])
-                if len(partners_bank) > 1:
-                    raise UserError(
-                        _('There are more than one bank corresponding '
-                          'to the current string.\n'
-                          'Please check the banks configuration.'))
-                partner_bank = partners_bank
+            domain = [('ccp', '=', data['bvr_struct']['beneficiaire']),
+                      ('bvr_adherent_num', '=', data['bvr_struct']['bvrnumber'])]
+        partner_bank = partner_bank_model.search(domain, limit=1)
         # We will need to know if we need to create invoice line
         if partner_bank:
             # We have found the account corresponding to the
@@ -399,7 +363,7 @@ class ScanBvr(models.TransientModel):
         else:
             # we haven't found a valid bvr_adherent_number
             # we will need to create or update a bank account
-            self.write({'state': 'need_extra_info'})
+            self.state = 'need_extra_info'
             return {
                 'type': 'ir.actions.act_window',
                 'res_model': 'scan.bvr',

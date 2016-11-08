@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # Author: Yannick Vaucher
-# (c) 2014 Camptocamp SA
-# (c) 2015 Alex Comba - Agile Business Group
-# (c) 2016 Alvaro Estebanez - Brain-tec AG
+# Copyright 2014 Camptocamp SA
+# Copyright 2015 Alex Comba - Agile Business Group
+# Copyright 2016 Alvaro Estebanez - Brain-tec AG
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0.html
 
 import openerp.tests.common as common
