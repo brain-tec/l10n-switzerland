@@ -16,7 +16,8 @@ class TestScanBvr(common.TransactionCase):
     def _load(self, module, *args):
         tools.convert_file(self.cr, 'l10n_ch_scan_bvr',
                            get_module_resource(module, *args),
-                           {}, 'init', False, 'test', self.registry._assertion_report)
+                           {}, 'init', False, 'test',
+                           self.registry._assertion_report)
 
     def setUp(self):
         super(TestScanBvr, self).setUp()
@@ -52,7 +53,8 @@ class TestScanBvr(common.TransactionCase):
             'partner_id': self.ref('base.res_partner_2'),
         })
         self.partner1bank1 = PartnerBank.browse(partner1bank1.id)
-        self.purchase_journal_id = self.ref('l10n_ch_scan_bvr.expenses_journal')
+        self.purchase_journal_id = \
+            self.ref('l10n_ch_scan_bvr.expenses_journal')
 
     def _test_00_action_scan_wrong_bvr(self):
         """ Check use of wrongly defined bvr line """
