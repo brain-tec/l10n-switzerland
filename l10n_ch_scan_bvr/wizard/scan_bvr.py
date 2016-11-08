@@ -160,7 +160,8 @@ class ScanBvr(models.TransientModel):
             invoice_line_vals = specs.copy()
             invoice_line_vals.update(default_values)
             invoice_line_vals.update(my_vals)
-            product_onchange_result = invoice_line_model.onchange(invoice_line_vals, ['product_id'], specs)
+            product_onchange_result = invoice_line_model.onchange(
+                invoice_line_vals, ['product_id'], specs)
             value = product_onchange_result.get('value', {})
 
             for name, val in value.iteritems():
@@ -170,7 +171,8 @@ class ScanBvr(models.TransientModel):
 
                     invoice_line_vals.update(value)
 
-            invoice_line_vals.update({'price_unit': data['bvr_struct']['amount']})
+            invoice_line_vals.update(
+                {'price_unit': data['bvr_struct']['amount']})
             invoice_line = invoice_line_model.create(invoice_line_vals)
             # We will check that the tax specified
             # on the product is price include or amount is 0
@@ -212,7 +214,8 @@ class ScanBvr(models.TransientModel):
         invoice_vals = {
             'name': today,
             'partner_id': account_info.partner_id.id,
-            'account_id': account_info.partner_id.property_account_payable_id.id,
+            'account_id':
+                account_info.partner_id.property_account_payable_id.id,
             'date_due': date_due,
             'date_invoice': today,
             'payment_term_id': payment_term_id,
@@ -339,8 +342,9 @@ class ScanBvr(models.TransientModel):
         if data['bvr_struct']['domain'] == 'name':
             domain = [('ccp', '=', data['bvr_struct']['beneficiaire'])]
         else:
-            domain = [('ccp', '=', data['bvr_struct']['beneficiaire']),
-                      ('bvr_adherent_num', '=', data['bvr_struct']['bvrnumber'])]
+            domain = \
+                [('ccp', '=', data['bvr_struct']['beneficiaire']),
+                 ('bvr_adherent_num', '=', data['bvr_struct']['bvrnumber'])]
         partner_bank = partner_bank_model.search(domain, limit=1)
         # We will need to know if we need to create invoice line
         if partner_bank:

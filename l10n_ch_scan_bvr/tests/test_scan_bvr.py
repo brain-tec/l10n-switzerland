@@ -6,13 +6,21 @@
 # License AGPL-3 - See http://www.gnu.org/licenses/agpl-3.0.html
 
 import openerp.tests.common as common
+from openerp import tools
+from openerp.modules.module import get_module_resource
 
 
 class TestScanBvr(common.TransactionCase):
     """ Test the wizard for bvr line scanning """
 
+    def _load(self, module, *args):
+        tools.convert_file(self.cr, 'l10n_ch_scan_bvr',
+                           get_module_resource(module, *args),
+                           {}, 'init', False, 'test', self.registry._assertion_report)
+
     def setUp(self):
         super(TestScanBvr, self).setUp()
+        self._load('account', 'test', 'account_minimal_test.xml')
         self.ScanBVR = self.env['scan.bvr']
 
         #  I create a swiss bank with a BIC number
@@ -80,6 +88,8 @@ class TestScanBvr(common.TransactionCase):
             'partner_id': self.partner1.id,
             'bank_account_id': self.partner1bank1.id,
         })
+        chf = self.env.ref('base.CHF')
+        chf.active = True
         act = wizard.validate_bvr_string()
         self.assertTrue(act['res_id'])
 
