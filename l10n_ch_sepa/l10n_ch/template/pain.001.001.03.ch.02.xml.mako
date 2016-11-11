@@ -53,6 +53,19 @@
                 <Prtry>CH01</Prtry>
               </LclInstrm>
           </PmtTpInf>
+   % elif invoice.partner_bank_id.state == 'bv':
+          <PmtTpInf>
+              <LclInstrm>
+                <Prtry>CH02</Prtry>
+              </LclInstrm>
+          </PmtTpInf>
+   % elif invoice.partner_bank_id.state in ('iban', 'bank'):
+          <PmtTpInf>
+              <LclInstrm>
+                <Prtry>CH03</Prtry>
+                  <% invoice.partner_bank_id.state %>
+              </LclInstrm>
+          </PmtTpInf>
    % endif
 </%block>
 
