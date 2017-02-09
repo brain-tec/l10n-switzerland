@@ -102,7 +102,7 @@ class AccountInvoice(models.Model):
                     return True
                 # Hack by mara1
                 # Adding check for Swiss BVR accounts. Otherwise length is not limited nd check number might be right for any extension
-                if len(invoice.reference) >= 27:
+                if len(invoice.reference) > 27:
                     raise exceptions.ValidationError(
                         _('Invalid BVR/ESR Number (length > 26 + check number).')
                     )
