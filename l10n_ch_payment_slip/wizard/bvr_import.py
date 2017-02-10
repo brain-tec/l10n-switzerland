@@ -198,10 +198,12 @@ class BvrImporterWizard(models.TransientModel):
                 invoice_move_id = invoice.move_id.id
                 break
         if invoice_move_id:
-            # hack jool: added check with date_maturity
-            move_lines = account_move_line.search([('move_id', '=', invoice_move_id),
-                                                   ('reconciled', '=', False)])
-            ret = move_lines
+            move_line = account_move_line.search([('move_id', '=', invoice_move_id),
+                                                  ('reconciled', '=', False),
+                                                  ('account_id.user_type_id.type', 'in', ['receivable', 'payable']),
+                                                  ('journal_id.type', '=', 'sale')],
+                                                 limit=1)
+            ret = move_line
 
         else:
             ret = account_move_line
