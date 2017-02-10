@@ -165,27 +165,22 @@ class BvrImporterWizard(models.TransientModel):
         '''
 
         ###
-        id_invoice = False
+        invoice_move_id = False
         # On fait d'abord une recherche sur toutes les factures
         # we now search for an invoice
-        user_company_id = self.env.user.company_id.id
-        res_partner_bank = self.env['res.partner.bank']
+        account_move_line = self.env['account.move.line']
 
         ##
-        self._cr.execute("""SELECT inv.id, inv.number, partner_bank_id
-                              FROM account_invoice AS inv
-                             WHERE inv.company_id = %s AND type='out_invoice'""", (user_company_id,))
-        self._cr.execute("""SELECT inv.id, inv.number, partner_bank_id
-                              FROM account_invoice AS inv
-                             WHERE inv.company_id = %s AND state = 'open' AND type = 'out_invoice'
-                             ORDER BY inv.id DESC""", (user_company_id,))  # hack by wysi1
-        result_invoice = self._cr.fetchall()
-        for inv_id, inv_number, partner_bank_id in result_invoice:
+        invoices = self.env['account.invoice'].search([('company_id', '=', self.env.user.company_id.id),
+                                                       ('state', '=', 'open'),  # hack by wysi1
+                                                       ('type', '=', 'out_invoice')],
+                                                      order='id DESC')
+        for invoice in invoices:
+            inv_number = invoice.number
             # hack jool: create full ref number
-            partner_bank_current = res_partner_bank.browse(partner_bank_id)
             res = ''
-            if partner_bank_current.bvr_adherent_num:
-                res = partner_bank_current.bvr_adherent_num
+            if invoice.partner_bank_id.bvr_adherent_num:
+                res = invoice.partner_bank_id.bvr_adherent_num
             invoice_number = ''
             if inv_number:
                 # invoice_number = re.sub('[^0-9]', '0', inv_number)
@@ -193,32 +188,23 @@ class BvrImporterWizard(models.TransientModel):
 
             # hack by wysi1:
             if invoice_number == reference:
-                id_invoice = inv_id
+                invoice_move_id = invoice.move_id.id
                 break
 
             inv_number = mod10r(res + invoice_number.rjust(26 - len(res), '0'))
             #        inv_number =  REF.sub('0', str(inv_number))
 
             if inv_number == reference:
-                id_invoice = inv_id
+                invoice_move_id = invoice.move_id.id
                 break
-        if id_invoice:
+        if invoice_move_id:
             # hack jool: added check with date_maturity
-            #        cr.execute('SELECT l.id ' \
-            #                    'FROM account_move_line l, account_invoice i ' \
-            #                    'WHERE l.move_id = i.move_id AND l.reconcile_id is NULL AND date_maturity is not NULL ' \
-            #                        'AND i.id IN %s',(tuple([id_invoice]),))
-            self._cr.execute("""SELECT l.id
-                                  FROM account_move_line l, account_invoice i
-                                 WHERE l.move_id = i.move_id AND
-                                       l.reconciled = false AND
-                                       i.id IN %s""", (tuple([id_invoice]),))
-            inv_line = []
-            for id_line in self._cr.fetchall():
-                inv_line.append(id_line[0])
-            ret = inv_line
+            move_lines = account_move_line.search([('move_id', '=', invoice_move_id),
+                                                   ('reconciled', '=', False)])
+            ret = move_lines
+
         else:
-            ret = []
+            ret = account_move_line
         return ret
 
     @api.model
@@ -274,7 +260,6 @@ class BvrImporterWizard(models.TransientModel):
             if not line:
                 reference = record['reference'].lstrip('0')
                 line = self._reconstruct_invoice_ref(reference)
-                line = move_line_obj.browse(line)
             if line:
                 num = line.invoice_id.number if line.invoice_id else False
                 values['ref'] = _('Inv. no %s') % num if num else values['name']
