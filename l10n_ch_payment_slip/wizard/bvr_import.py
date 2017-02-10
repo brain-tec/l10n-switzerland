@@ -157,6 +157,71 @@ class BvrImporterWizard(models.TransientModel):
         return records
 
     @api.model
+    def _reconstruct_invoice_ref(self, reference):
+        '''
+        This function has been migrated from l10n_ch module of version 6.1
+        :param reference: The reference of the BVR
+        :return: The invoice id if it is matched or [] otherwise
+        '''
+
+        ###
+        id_invoice = False
+        # On fait d'abord une recherche sur toutes les factures
+        # we now search for an invoice
+        user_company_id = self.env.user.company_id.id
+        res_partner_bank = self.env['res.partner.bank']
+
+        ##
+        self._cr.execute("""SELECT inv.id, inv.number, partner_bank_id
+                              FROM account_invoice AS inv
+                             WHERE inv.company_id = %s AND type='out_invoice'""", (user_company_id,))
+        self._cr.execute("""SELECT inv.id, inv.number, partner_bank_id
+                              FROM account_invoice AS inv
+                             WHERE inv.company_id = %s AND state = 'open' AND type = 'out_invoice'
+                             ORDER BY inv.id DESC""", (user_company_id,))  # hack by wysi1
+        result_invoice = self._cr.fetchall()
+        for inv_id, inv_number, partner_bank_id in result_invoice:
+            # hack jool: create full ref number
+            partner_bank_current = res_partner_bank.browse(partner_bank_id)
+            res = ''
+            if partner_bank_current.bvr_adherent_num:
+                res = partner_bank_current.bvr_adherent_num
+            invoice_number = ''
+            if inv_number:
+                # invoice_number = re.sub('[^0-9]', '0', inv_number)
+                invoice_number = re.sub('[^0-9]', '', inv_number)
+
+            # hack by wysi1:
+            if invoice_number == reference:
+                id_invoice = inv_id
+                break
+
+            inv_number = mod10r(res + invoice_number.rjust(26 - len(res), '0'))
+            #        inv_number =  REF.sub('0', str(inv_number))
+
+            if inv_number == reference:
+                id_invoice = inv_id
+                break
+        if id_invoice:
+            # hack jool: added check with date_maturity
+            #        cr.execute('SELECT l.id ' \
+            #                    'FROM account_move_line l, account_invoice i ' \
+            #                    'WHERE l.move_id = i.move_id AND l.reconcile_id is NULL AND date_maturity is not NULL ' \
+            #                        'AND i.id IN %s',(tuple([id_invoice]),))
+            self._cr.execute("""SELECT l.id
+                                  FROM account_move_line l, account_invoice i
+                                 WHERE l.move_id = i.move_id AND
+                                       l.reconciled = false AND
+                                       i.id IN %s""", (tuple([id_invoice]),))
+            inv_line = []
+            for id_line in self._cr.fetchall():
+                inv_line.append(id_line[0])
+            ret = inv_line
+        else:
+            ret = []
+        return ret
+
+    @api.model
     def _prepare_line_vals(self, statement, record):
         """Compute bank statement values to be used by `models.Model.create'
         :param statement: current statement record
@@ -195,6 +260,25 @@ class BvrImporterWizard(models.TransientModel):
             num = line.invoice_id.number if line.invoice_id else False
             values['ref'] = _('Inv. no %s') % num if num else values['name']
             values['partner_id'] = partner_id
+        else:
+            # Hack esal1: Backwards compatibility with v6.1
+            line = move_line_obj.search(
+                [('ref', 'like', reference),
+                 ('reconciled', '=', False),
+                 ('account_id.user_type_id.type', 'in', ['receivable', 'payable']),
+                 ('journal_id.type', '=', 'sale'),
+                 # HACK: 04.08.2015 11:22:05: jool1: added check if journal type is 'sale',
+                 # HACK:                             otherwise it does not work with partial payments
+                 ],
+                order='date desc')
+            if not line:
+                reference = record['reference'].lstrip('0')
+                line = self._reconstruct_invoice_ref(reference)
+                line = move_line_obj.browse(line)
+            if line:
+                num = line.invoice_id.number if line.invoice_id else False
+                values['ref'] = _('Inv. no %s') % num if num else values['name']
+                values['partner_id'] = line.partner_id.id
         return values
 
     def _import_v11(self):
