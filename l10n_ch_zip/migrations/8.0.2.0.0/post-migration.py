@@ -66,6 +66,38 @@ def migrate(cr, version):
                    "SET state_id = %s "
                    "WHERE state_id = %s;", (new_state, old_state))
 
+        cr.execute("UPDATE res_better_zip "
+                   "SET state_id = %s "
+                   "WHERE state_id = %s;", (new_state, old_state))
+
+        cr.execute("UPDATE hr_employee_year "
+                   "SET wohnkanton_id = %s "
+                   "WHERE wohnkanton_id = %s;", (new_state, old_state))
+
+        cr.execute("UPDATE hr_employee_year "
+                   "SET wohnkanton_id_to_save = %s "
+                   "WHERE wohnkanton_id_to_save = %s;", (new_state, old_state))
+
+        cr.execute("UPDATE hr_employee_calculationparameter_arbeitskanton "
+                   "SET state_id = %s "
+                   "WHERE state_id = %s;", (new_state, old_state))
+
+        cr.execute("UPDATE hr_employee_year "
+                   "SET spesen_stv_state_id = %s "
+                   "WHERE spesen_stv_state_id = %s;", (new_state, old_state))
+
+        cr.execute("UPDATE res_company_bur "
+                   "SET state_id = %s "
+                   "WHERE state_id = %s;", (new_state, old_state))
+
+        cr.execute("UPDATE res_company_fak "
+                   "SET state_id = %s "
+                   "WHERE state_id = %s;", (new_state, old_state))
+
+        cr.execute("UPDATE res_company_year "
+                   "SET spesen_stv_state_id = %s "
+                   "WHERE spesen_stv_state_id = %s;", (new_state, old_state))
+
         cr.execute("DELETE FROM res_country_state "
                    "WHERE id = %s;", (old_state,))
 

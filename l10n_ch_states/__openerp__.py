@@ -30,6 +30,7 @@
         'base',
     ],
     'data': ['data/res_country_states.xml'],
+    'pre_init_hook': 'pre_init',
     'demo': [],
     'installable': True,
     'application': False,
