@@ -392,7 +392,6 @@ class RecordGt836(Record):
                                       values['partner_bank_city'],
                                       values['partner_bank_country'])
             return res
-
         part = self.pline.partner_id
         p_country = '%s-' % part.country_id.code if part.country_id else ''
         self.global_values['partner_country'] = p_country
@@ -644,17 +643,18 @@ class DTAFileGenerator(models.TransientModel):
 
     @api.model
     def _process_payment_lines(self, data, pline, elec_context, seq):
-        if not pline.partner_bank_id:
+        partner_bank = pline.partner_bank_id
+        if not partner_bank:
             raise except_orm(
                 _('Error'),
                 _('No bank account defined\n on line: %s') % pline.name
             )
-        if not pline.partner_bank_id.bank_id:
+        if not partner_bank:
             raise except_orm(
                 _('Error'),
                 _('No bank defined for the bank account: %s\n'
                   'on the partner: %s\n on line: %s') %
-                (pline.partner_bank_id.acc_type,
+                (partner_bank.acc_type,
                  pline.partner_id.name,
                  pline.name)
             )
@@ -664,28 +664,28 @@ class DTAFileGenerator(models.TransientModel):
         elec_context['number'] = pline.name
         elec_context['currency'] = pline.currency_id.name
         elec_context[
-            'partner_bank_name'] = pline.partner_bank_id.bank_name or False
-        clearing = pline.partner_bank_id.bank_id.clearing or False
+            'partner_bank_name'] = partner_bank.bank_name or False
+        clearing = partner_bank.bank_id.clearing or False
         elec_context['partner_bank_clearing'] = clearing
         if not elec_context['partner_bank_name']:
             raise except_orm(
                 _('Error'),
                 _('No bank name defined\n for the bank account: %s\n'
                   'on the partner: %s\n on line: %s') %
-                (pline.partner_bank_id.acc_type,
+                (partner_bank.acc_type,
                  pline.partner_id.name,
                  pline.name)
             )
-        elec_context['partner_bank_iban'] = (
-            pline.partner_bank_id.get_account_number() or
-            False
-        )
-        number = pline.partner_bank_id.get_account_number() or ''
+        iban = (partner_bank.acc_number if partner_bank.acc_type == 'iban'
+                else False)
+        elec_context['partner_bank_iban'] = iban
+
+        number = partner_bank.get_account_number() or ''
         number = number.replace('.', '').replace('-', '') or False
         elec_context['partner_bank_number'] = number
         elec_context['partner_bvr'] = ''
-        if pline.partner_bank_id.ccp:
-            part = pline.partner_bank_id.get_account_number() or ''
+        if partner_bank.ccp:
+            part = partner_bank.get_account_number() or ''
             elec_context['partner_bvr'] = part
         self._set_bank_data(pline, elec_context, seq)
 
@@ -719,7 +719,8 @@ class DTAFileGenerator(models.TransientModel):
             elec_pay = pline.partner_bank_id.acc_type  # Bank type
             part = pline.partner_id
             country_code = part.country_id.code if part.country_id else False
-            if elec_pay in ['iban', 'bank']:
+            if elec_pay in ['iban', 'bank'] and \
+               pline.communication_type != 'bvr':
                 # If iban => country=country code for space reason
                 record_type = RecordGt836
             elif country_code and country_code != 'CH':
