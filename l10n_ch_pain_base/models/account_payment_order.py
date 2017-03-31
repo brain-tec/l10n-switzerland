@@ -1,9 +1,9 @@
 # -*- coding: utf-8 -*-
-# © 2016 Akretion (www.akretion.com)
+# copyright 2016 Akretion (www.akretion.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html).
 
-from openerp import models, api, _
-from openerp.exceptions import UserError
+from odoo import models, api, _
+from odoo.exceptions import UserError
 from lxml import etree
 
 
@@ -90,7 +90,7 @@ class AccountPaymentOrder(models.Model):
             if not partner_bank.ccp:
                 raise UserError(_(
                     "The field 'CCP/CP-Konto' is not set on the bank "
-                    "'%s'.") % partner_bank.bank_id.name)
+                    "account '%s'.") % partner_bank.name)
             party_account = etree.SubElement(
                 parent_node, '%sAcct' % party_type)
             party_account_id = etree.SubElement(party_account, 'Id')
