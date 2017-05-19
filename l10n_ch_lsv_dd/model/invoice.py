@@ -457,6 +457,7 @@ class AccountInvoice(models.Model):
             open_invoices = self.search(
                 [('company_id', '=', company.id),
                  ('state', '=', 'open'),
+                 ('residual', '=', 0.0),
                  ])
 
             # Whether to send the LSV payment files.
