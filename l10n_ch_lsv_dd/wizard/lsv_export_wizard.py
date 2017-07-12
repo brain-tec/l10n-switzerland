@@ -198,6 +198,10 @@ class LsvExportWizard(models.TransientModel):
     def _generate_debit_line(self, line, properties, payment_order):
         ''' Convert each payment_line to lsv debit line '''
         deb_acc_number = line.bank_id.acc_number
+        if deb_acc_number == False or deb_acc_number == None:
+            raise exceptions.ValidationError(
+                _('Line with ref %s has no CH or LI IBAN') % (line.name)
+            )
         deb_acc_number = deb_acc_number.replace(' ', '').replace('-', '')
         if line.bank_id.state == 'iban' and not self._is_ch_li_iban(
                 deb_acc_number):
