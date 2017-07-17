@@ -98,7 +98,7 @@ msgstr ""
 #: view:fds.key.generator.wizard:l10n_ch_fds_postfinance.view_fds_key_generator_wizard_form
 #: view:fds.key.import.wizard:l10n_ch_fds_postfinance.view_fds_key_import_wizard_form
 msgid "Close"
-msgstr ""
+msgstr "Kapat"
 
 #. module: l10n_ch_fds_postfinance
 #: view:fds.key.clone.wizard:l10n_ch_fds_postfinance.view_fds_key_clone_wizard_form
@@ -184,7 +184,7 @@ msgstr ""
 #. module: l10n_ch_fds_postfinance
 #: selection:fds.postfinance.file,state:0
 msgid "Draft"
-msgstr ""
+msgstr "Taslak"
 
 #. module: l10n_ch_fds_postfinance
 #: help:fds.postfinance.account,postfinance_email:0
@@ -296,7 +296,7 @@ msgstr ""
 #. module: l10n_ch_fds_postfinance
 #: field:fds.postfinance.file,filename:0
 msgid "Filename"
-msgstr ""
+msgstr "Dosya adı"
 
 #. module: l10n_ch_fds_postfinance
 #: field:fds.files.import.tobankstatments.wizard,msg_exist_file:0
@@ -322,7 +322,7 @@ msgstr "ID"
 #. module: l10n_ch_fds_postfinance
 #: view:fds.key.import.wizard:l10n_ch_fds_postfinance.view_fds_key_import_wizard_form
 msgid "Import"
-msgstr ""
+msgstr "İçe Aktar"
 
 #. module: l10n_ch_fds_postfinance
 #: view:fds.postfinance.account:l10n_ch_fds_postfinance.view_fds_postfinance_account_form
@@ -342,7 +342,7 @@ msgstr ""
 #. module: l10n_ch_fds_postfinance
 #: field:fds.postfinance.directory,journal_id:0
 msgid "Journal"
-msgstr ""
+msgstr "Yevmiye Defteri"
 
 #. module: l10n_ch_fds_postfinance
 #: field:fds.authentication.keys,key_active:0
@@ -387,7 +387,7 @@ msgstr ""
 #. module: l10n_ch_fds_postfinance
 #: field:fds.postfinance.account,name:0
 msgid "Name"
-msgstr ""
+msgstr "Adı"
 
 #. module: l10n_ch_fds_postfinance
 #: view:fds.postfinance.account:l10n_ch_fds_postfinance.view_fds_postfinance_account_form
@@ -473,7 +473,7 @@ msgstr ""
 #: field:fds.key.clone.wizard,state:0 field:fds.key.generator.wizard,state:0
 #: field:fds.key.import.wizard,state:0 field:fds.postfinance.file,state:0
 msgid "State"
-msgstr ""
+msgstr "Durum"
 
 #. module: l10n_ch_fds_postfinance
 #: field:fds.key.clone.wizard,des_user_id:0
@@ -496,13 +496,13 @@ msgstr ""
 #: field:fds.key.generator.wizard,user_id:0
 #: field:fds.key.import.wizard,user_id:0
 msgid "User"
-msgstr ""
+msgstr "Kullanıcı"
 
 #. module: l10n_ch_fds_postfinance
 #: view:fds.key.generator.wizard:l10n_ch_fds_postfinance.view_fds_key_generator_wizard_form
 #: view:fds.key.import.wizard:l10n_ch_fds_postfinance.view_fds_key_import_wizard_form
 msgid "Validate"
-msgstr ""
+msgstr "Doğrula"
 
 #. module: l10n_ch_fds_postfinance
 #: view:fds.postfinance.account:l10n_ch_fds_postfinance.view_fds_postfinance_account_form

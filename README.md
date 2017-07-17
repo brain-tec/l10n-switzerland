@@ -65,6 +65,7 @@ Provide Swizerland Payroll Rules.
 Allow to specify a LPP range to contract and 2 kinds of children to employee.
 
 [//]: # (addons)
+
 Available addons
 ----------------
 addon | version | summary
@@ -89,6 +90,7 @@ addon | version | summary
 [l10n_ch_sepa](l10n_ch_sepa/) | 8.0.1.0.0 | Generate pain.001 Credit Transfert Files for your payments
 [l10n_ch_states](l10n_ch_states/) | 8.0.1.0.0 | Switzerland Country States
 [l10n_ch_zip](l10n_ch_zip/) | 8.0.2.0.0 | Provides all Swiss postal codes for auto-completion
+
 
 Unported addons
 ---------------

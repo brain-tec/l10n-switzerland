@@ -43,12 +43,12 @@ msgstr ""
 #. module: l10n_ch_base_bank
 #: model:ir.model,name:l10n_ch_base_bank.model_res_bank
 msgid "Bank"
-msgstr ""
+msgstr "Banco"
 
 #. module: l10n_ch_base_bank
 #: model:ir.model,name:l10n_ch_base_bank.model_res_partner_bank
 msgid "Bank Accounts"
-msgstr ""
+msgstr "Cuentas bancarias"
 
 #. module: l10n_ch_base_bank
 #: field:res.partner.bank,bvr_adherent_num:0
@@ -94,7 +94,7 @@ msgstr ""
 #. module: l10n_ch_base_bank
 #: model:ir.model,name:l10n_ch_base_bank.model_account_invoice
 msgid "Invoice"
-msgstr ""
+msgstr "Factura"
 
 #. module: l10n_ch_base_bank
 #: code:addons/l10n_ch_base_bank/bank.py:113
