@@ -109,7 +109,7 @@ class AccountInvoice(models.Model):
                 if partner_bank:
                     res['value']['partner_bank_id'] = partner_bank.id
                     bank_id = partner_bank.id
-        if partner_bank_id != bank_id:
+        if bank_id and partner_bank_id != bank_id:
             res['value']['partner_bank_id'] = bank_id
         return res
 
