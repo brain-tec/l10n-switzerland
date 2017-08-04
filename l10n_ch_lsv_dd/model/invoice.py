@@ -314,7 +314,7 @@ class AccountInvoice(models.Model):
                     'communication': communication_text,
                     'state': 'normal',
                     'mandate_id': banking_mandate_id.id,
-                    'amount_currency': invoice.amount_total,
+                    'amount_currency': invoice.residual,
                     'currency': invoice.currency_id.id,
                     'company_currency': company_currency.id,
                     'company_id': company.id,
