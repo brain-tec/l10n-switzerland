@@ -143,7 +143,7 @@ class Bank(models.Model, BankCommon):
                         ids += tmp_ids.ids
                         break
         else:
-            ids = self.search(
+            ids = self.search([],
                 limit=limit
                 ).ids
         # we sort by occurence
