@@ -25,7 +25,8 @@ from date_utils import is_weekday, is_past_weekday
 from openerp import models, api, _, exceptions, fields, SUPERUSER_ID
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT
-
+from logging import getLogger
+_logger = getLogger(__name__)
 
 class AccountInvoice(models.Model):
 
@@ -299,6 +300,8 @@ class AccountInvoice(models.Model):
             invoice_ids = self.search([('id', 'in', self.ids),
                                        ('partner_id', '=', partner.id),
                                        ])
+            _logger.info("_send_lsv: create LSV for {0} of {1}".format(invoice_ids, partner))
+
             for invoice in invoice_ids:
                 communication_text = 'For Invoice {0}.'.format(invoice.number)
                 company = self._get_company()
@@ -353,11 +356,13 @@ class AccountInvoice(models.Model):
                                              payment_order, 'dd')
 
             # Marks the invoice as having been 'exported' to DD.
+            _logger.info("_send_dd: {0} invoices sent".format(len(self)))
             for invoice in self:
                 invoice.dd_sent = True
                 invoice.dd_sent_date = now_str
 
         except Exception as e:
+            _logger.error("_send_dd: {0}".format(e))
             lsv_dd_error_obj.add_error(str(e), 'dd')
 
         return True
@@ -393,11 +398,13 @@ class AccountInvoice(models.Model):
                                              payment_order, 'lsv')
 
             # Marks the invoice as having been 'exported' to LSV.
+            _logger.info("_send_lsv: {0} invoices sent".format(len(self)))
             for invoice in self:
                 invoice.lsv_sent = True
                 invoice.lsv_sent_date = now_str
 
         except Exception as e:
+            _logger.error("_send_lsv: {0}".format(e))
             lsv_dd_error_obj.add_error(str(e), 'lsv')
 
         return True
@@ -449,8 +456,10 @@ class AccountInvoice(models.Model):
             the invoices, and sends them to the indicated email addresses
             (but only if those addresses are set).
         '''
+        _logger.info("send_lsv_dd: searching for invoices")
         for company in self.env['res.company'].search([]):
             if not self._test_send_lsv_dd(company):
+                _logger.info("send_lsv_dd: aborted, because not the right timeframe")
                 continue
 
             # Gets the paid invoices from this company.
@@ -459,6 +468,7 @@ class AccountInvoice(models.Model):
                  ('state', '=', 'open'),
                  ('residual', '!=', 0.0),
                  ])
+            _logger.info("send_lsv_dd: found {0} open invoices".format(len(open_invoices)))
 
             # Whether to send the LSV payment files.
             if company.lsv_email_address:
@@ -472,6 +482,7 @@ class AccountInvoice(models.Model):
                      ('partner_bank_id', '=', lsv_company_account.id),
                      ])
                 if pending_invoices:
+                    _logger.info("send_lsv_dd: found {0} pending LSV invoices".format(len(pending_invoices)))
                     pending_invoices._send_lsv(company.lsv_email_address)
 
             # Whether to send the DD payment files.
@@ -486,6 +497,7 @@ class AccountInvoice(models.Model):
                      ('partner_bank_id', '=', dd_company_account.id),
                      ])
                 if pending_invoices:
+                    _logger.info("send_lsv_dd: found {0} pending DD invoices".format(pending_invoices))
                     pending_invoices._send_dd(company.dd_email_address)
 
             # Stores the datetime in which the last sending of the payment
