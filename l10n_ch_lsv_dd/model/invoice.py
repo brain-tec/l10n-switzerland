@@ -368,9 +368,10 @@ class AccountInvoice(models.Model):
             self._send_payment_file_by_email(dd_email_address, file_content,
                                              payment_order, 'dd')
 
-            # Marks the invoice as having been 'exported' to DD. Direct DB access in much faster than changing objects.
+            # Marks the invoice as having been 'exported' to DD. Direct DB access is much faster than changing objects.
             _logger.info("_send_dd: {0} invoices sent".format(len(invoices_done)))
-            self._cr.execute('UPDATE account_invoice SET dd_sent = %s, dd_sent_date = %s WHERE id IN %s;',
+            if invoices_done:
+                self._cr.execute('UPDATE account_invoice SET dd_sent = %s, dd_sent_date = %s WHERE id IN %s;',
                              (True, now_str, tuple(invoices_done),))
 
         except Exception as e:
@@ -409,9 +410,10 @@ class AccountInvoice(models.Model):
             self._send_payment_file_by_email(lsv_email_address, file_content,
                                              payment_order, 'lsv')
 
-            # Marks the invoice as having been 'exported' to LSV. Direct DB access in much faster than changing objects.
+            # Marks the invoice as having been 'exported' to LSV. Direct DB access is much faster than changing objects.
             _logger.info("_send_lsv: {0} invoices sent".format(len(invoices_done)))
-            self._cr.execute('UPDATE account_invoice SET lsv_sent = %s, lsv_sent_date = %s WHERE id IN %s;',
+            if invoices_done:
+                self._cr.execute('UPDATE account_invoice SET lsv_sent = %s, lsv_sent_date = %s WHERE id IN %s;',
                              (True, now_str, tuple(invoices_done),))
 
         except Exception as e:
