@@ -20,7 +20,7 @@
 ##############################################################################
 
 import base64
-from datetime import datetime, timedelta
+from datetime import datetime
 from date_utils import is_weekday, is_past_weekday
 from openerp import models, api, _, exceptions, fields, SUPERUSER_ID
 from openerp.tools import DEFAULT_SERVER_DATE_FORMAT
@@ -250,7 +250,7 @@ class AccountInvoice(models.Model):
             payment_mode_id = self._get_payment_mode_for_dd().id
         payment_order = \
             payment_order_obj.create({'user_id': SUPERUSER_ID,
-                                      'date_prefered': 'due',
+                                      'date_prefered': 'now',
                                       'mode': payment_mode_id,
                                       })
         return payment_order
@@ -279,28 +279,41 @@ class AccountInvoice(models.Model):
         # In order to reduce the quantity of account.banking.mandate
         # created, we create just one per res.partner.
         partner_ids = set()
+
+        ### Runtime could be optimized here with self.cr.execute(...) but we will loose the partner object.
+        #self._cr.execute('SELECT DISTINCT partner_id FROM account_invoice WHERE id IN %s;', (tuple(self.ids),))
         for invoice in self:
             partner_ids.add(invoice.partner_id)
 
+        invoices_done = []
+        invoices_skip = []
         for partner in partner_ids:
-
             # Creates the account.banking.mandate for the bank account
             # of the current partner.
             if payment_type == 'lsv':
                 partner_bank_id = partner.lsv_bank_account_id.id
             else:  # if payment_type == 'dd':
                 partner_bank_id = partner.dd_bank_account_id.id
-            banking_mandate_id = \
-                banking_mandate_obj.create({'partner_bank_id': partner_bank_id,
-                                            'signature_date': now_date_str,
-                                            })
 
             # Gets the invoices which correspond to this res.partner, and for
             # each of them creates a payment.line with the amount paid on it.
             invoice_ids = self.search([('id', 'in', self.ids),
                                        ('partner_id', '=', partner.id),
                                        ])
-            _logger.info("_send_lsv: create LSV for {0} of {1}".format(invoice_ids, partner))
+            if not partner_bank_id:
+                _logger.error("_prepare_payment_file_creation: no bank_account for {0}".format(partner))
+                for inv in invoice_ids:
+                    _logger.debug("_prepare_payment_file_creation: skip {0}".format(inv))
+                    invoices_skip.append(inv.id)
+                continue
+
+            _logger.debug("__prepare_payment_file_creation: create mandate for {0} of {1}".format(invoice_ids, partner))
+            banking_mandate_id = \
+                banking_mandate_obj.create({'partner_bank_id': partner_bank_id,
+                                            'signature_date': now_date_str,
+                                            })
+            # Validates the banking mandate.
+            banking_mandate_id.validate()
 
             for invoice in invoice_ids:
                 communication_text = 'For Invoice {0}.'.format(invoice.number)
@@ -324,11 +337,11 @@ class AccountInvoice(models.Model):
                     'move_line_id': account_move_line.id,
                 }
                 payment_line_obj.create(payment_line_vals)
+                invoices_done.append(invoice.id)
 
-            # Validates the banking mandate.
-            banking_mandate_id.validate()
-
-        return True
+        if invoices_skip:
+            _logger.info("_prepare_payment_file_creation: skipped {0} invoices ({1})".format(len(invoices_skip), invoices_skip))
+        return invoices_done
 
     @api.multi
     def _send_dd(self, dd_email_address):
@@ -341,7 +354,7 @@ class AccountInvoice(models.Model):
         payment_order = self._create_payment_order('dd')
 
         try:
-            self._prepare_payment_file_creation(payment_order, 'dd')
+            invoices_done = self._prepare_payment_file_creation(payment_order, 'dd')
 
             # Generates the DD file for the generated payment order.
             company = self._get_company()
@@ -355,14 +368,13 @@ class AccountInvoice(models.Model):
             self._send_payment_file_by_email(dd_email_address, file_content,
                                              payment_order, 'dd')
 
-            # Marks the invoice as having been 'exported' to DD.
-            _logger.info("_send_dd: {0} invoices sent".format(len(self)))
-            for invoice in self:
-                invoice.dd_sent = True
-                invoice.dd_sent_date = now_str
+            # Marks the invoice as having been 'exported' to DD. Direct DB access in much faster than changing objects.
+            _logger.info("_send_dd: {0} invoices sent".format(len(invoices_done)))
+            self._cr.execute('UPDATE account_invoice SET dd_sent = %s, dd_sent_date = %s WHERE id IN %s;',
+                             (True, now_str, tuple(invoices_done),))
 
         except Exception as e:
-            _logger.error("_send_dd: {0}".format(e))
+            _logger.error("_send_dd: aborted - {0}".format(e))
             lsv_dd_error_obj.add_error(str(e), 'dd')
 
         return True
@@ -382,7 +394,7 @@ class AccountInvoice(models.Model):
         payment_order = self._create_payment_order('lsv')
 
         try:
-            self._prepare_payment_file_creation(payment_order, 'lsv')
+            invoices_done = self._prepare_payment_file_creation(payment_order, 'lsv')
 
             # Generates the LSV file for the generated payment order.
             company = self._get_company()
@@ -397,11 +409,10 @@ class AccountInvoice(models.Model):
             self._send_payment_file_by_email(lsv_email_address, file_content,
                                              payment_order, 'lsv')
 
-            # Marks the invoice as having been 'exported' to LSV.
-            _logger.info("_send_lsv: {0} invoices sent".format(len(self)))
-            for invoice in self:
-                invoice.lsv_sent = True
-                invoice.lsv_sent_date = now_str
+            # Marks the invoice as having been 'exported' to LSV. Direct DB access in much faster than changing objects.
+            _logger.info("_send_lsv: {0} invoices sent".format(len(invoices_done)))
+            self._cr.execute('UPDATE account_invoice SET lsv_sent = %s, lsv_sent_date = %s WHERE id IN %s;',
+                             (True, now_str, tuple(invoices_done),))
 
         except Exception as e:
             _logger.error("_send_lsv: {0}".format(e))
@@ -449,25 +460,46 @@ class AccountInvoice(models.Model):
         return test_send_lsv_dd
 
     @api.model
-    def send_lsv_dd(self):
+    def send_lsv_dd(self,cron_args=None):
         ''' Iterates over all the paid invoices the LSV and DD payment files
             of which has not been sent yet to the addresses indicated in the
             res.company view. Generates a single LSV and/or DD file for all
             the invoices, and sends them to the indicated email addresses
             (but only if those addresses are set).
+
+            cron_arg is the argument of the ODOO cron_job as dict. In GUI put: ({'force':True,'invoice_date':'<str>'},)
+            If used, it may contain a date string which defines the latest invoice date to be processed. like '2017-12-31'
         '''
         _logger.info("send_lsv_dd: searching for invoices")
-        for company in self.env['res.company'].search([]):
-            if not self._test_send_lsv_dd(company):
-                _logger.info("send_lsv_dd: aborted, because not the right timeframe")
-                continue
 
+        # Read and check arguments of cronjob.
+        force_exec = None
+        date_filter = None
+        if cron_args:
+            if 'force' in cron_args:
+                force_exec = cron_args['force']
+            if 'date_invoice' in cron_args:
+                date_filter = cron_args['date_invoice']
+
+        invoice_search_params =[]
+        if date_filter:
+            try:
+                datetime.strptime(date_filter, '%Y-%m-%d')
+                invoice_search_params.append(('date_invoice', '<=', date_filter))
+                _logger.info("send_lsv_dd: process all invoices until {0}".format(date_filter))
+            except ValueError:
+                _logger.error("send_lsv_dd: could not extract date from {0}".format(date_filter))
+
+        for company in self.env['res.company'].search([]):
+            if not self._test_send_lsv_dd(company) and not force_exec:
+                _logger.info("send_lsv_dd: not the right timeframe")
+                continue
             # Gets the paid invoices from this company.
-            open_invoices = self.search(
-                [('company_id', '=', company.id),
-                 ('state', '=', 'open'),
-                 ('residual', '!=', 0.0),
-                 ])
+            invoice_search_params.append(('company_id', '=', company.id))
+            invoice_search_params.append(('state', '=', 'open'))
+            invoice_search_params.append(('residual', '!=', 0.0))
+            invoice_search_params.append(('type', '=', 'out_invoice'))
+            open_invoices = self.search(invoice_search_params)
             _logger.info("send_lsv_dd: found {0} open invoices".format(len(open_invoices)))
 
             # Whether to send the LSV payment files.
@@ -481,8 +513,8 @@ class AccountInvoice(models.Model):
                      ('lsv_sent', '=', False),
                      ('partner_bank_id', '=', lsv_company_account.id),
                      ])
+                _logger.info("send_lsv_dd: found {0} pending LSV invoices".format(len(pending_invoices)))
                 if pending_invoices:
-                    _logger.info("send_lsv_dd: found {0} pending LSV invoices".format(len(pending_invoices)))
                     pending_invoices._send_lsv(company.lsv_email_address)
 
             # Whether to send the DD payment files.
@@ -496,8 +528,8 @@ class AccountInvoice(models.Model):
                      ('dd_sent', '=', False),
                      ('partner_bank_id', '=', dd_company_account.id),
                      ])
+                _logger.info("send_lsv_dd: found {0} pending DD invoices".format(len(pending_invoices)))
                 if pending_invoices:
-                    _logger.info("send_lsv_dd: found {0} pending DD invoices".format(pending_invoices))
                     pending_invoices._send_dd(company.dd_email_address)
 
             # Stores the datetime in which the last sending of the payment
