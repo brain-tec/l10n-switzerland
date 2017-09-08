@@ -246,8 +246,11 @@ class AccountInvoice(models.Model):
 
         if payment_type == 'lsv':
             payment_mode_id = self._get_payment_mode_for_lsv().id
-        else:  # if payment_type == 'dd':
+        elif payment_type == 'dd':
             payment_mode_id = self._get_payment_mode_for_dd().id
+        else:
+            _logger.error("_create_payment_order: unsupported payment type".format(payment_type))
+
         payment_order = \
             payment_order_obj.create({'user_id': SUPERUSER_ID,
                                       'date_prefered': 'now',
@@ -273,6 +276,7 @@ class AccountInvoice(models.Model):
         banking_mandate_obj = self.env['account.banking.mandate']
         payment_line_obj = self.env['payment.line']
         account_move_line_obj = self.env['account.move.line']
+        lsv_dd_error_obj = self.env['lsv.dd.error']
 
         self._check_allowed_payment_types(payment_type)
 
@@ -287,13 +291,18 @@ class AccountInvoice(models.Model):
 
         invoices_done = []
         invoices_skip = []
+
         for partner in partner_ids:
             # Creates the account.banking.mandate for the bank account
             # of the current partner.
             if payment_type == 'lsv':
                 partner_bank_id = partner.lsv_bank_account_id.id
-            else:  # if payment_type == 'dd':
+            elif payment_type == 'dd':
                 partner_bank_id = partner.dd_bank_account_id.id
+            else:
+                _logger.error("_prepare_payment_file_creation: unsupported payment type".format(partner))
+                lsv_dd_error_obj.add_error("Unsupported payment type ".payment_type, 'lsv')
+                partner_bank_id = None
 
             # Gets the invoices which correspond to this res.partner, and for
             # each of them creates a payment.line with the amount paid on it.
@@ -302,6 +311,7 @@ class AccountInvoice(models.Model):
                                        ])
             if not partner_bank_id:
                 _logger.error("_prepare_payment_file_creation: no bank_account for {0}".format(partner))
+                lsv_dd_error_obj.add_error("No bank_account for {0}".format(partner.display_name), payment_type)
                 for inv in invoice_ids:
                     _logger.debug("_prepare_payment_file_creation: skip {0}".format(inv))
                     invoices_skip.append(inv.id)
@@ -336,7 +346,7 @@ class AccountInvoice(models.Model):
                     'company_id': company.id,
                     'move_line_id': account_move_line.id,
                 }
-                payment_line_obj.create(payment_line_vals)
+                payment_id = payment_line_obj.create(payment_line_vals)
                 invoices_done.append(invoice.id)
 
         if invoices_skip:
@@ -377,6 +387,8 @@ class AccountInvoice(models.Model):
         except Exception as e:
             _logger.error("_send_dd: aborted - {0}".format(e))
             lsv_dd_error_obj.add_error(str(e), 'dd')
+            # Raise error to caller, otherwise the half-done transaction will be written to DB.
+            raise RuntimeError(str(e))
 
         return True
 
@@ -419,6 +431,8 @@ class AccountInvoice(models.Model):
         except Exception as e:
             _logger.error("_send_lsv: {0}".format(e))
             lsv_dd_error_obj.add_error(str(e), 'lsv')
+            # Raise error to caller, otherwise the half-done transaction will be written to DB.
+            raise RuntimeError(str(e))
 
         return True
 
@@ -472,6 +486,7 @@ class AccountInvoice(models.Model):
             cron_arg is the argument of the ODOO cron_job as dict. In GUI put: ({'force':True,'invoice_date':'<str>'},)
             If used, it may contain a date string which defines the latest invoice date to be processed. like '2017-12-31'
         '''
+        lsv_dd_error_obj = self.env['lsv.dd.error']
         _logger.info("send_lsv_dd: searching for invoices")
 
         # Read and check arguments of cronjob.
@@ -491,6 +506,7 @@ class AccountInvoice(models.Model):
                 _logger.info("send_lsv_dd: process all invoices until {0}".format(date_filter))
             except ValueError:
                 _logger.error("send_lsv_dd: could not extract date from {0}".format(date_filter))
+                lsv_dd_error_obj.add_error("Could not extract date from ".str(date_filter), 'lsv')
 
         for company in self.env['res.company'].search([]):
             if not self._test_send_lsv_dd(company) and not force_exec:
