@@ -324,10 +324,13 @@ class PaymentSlip(models.Model):
         """
         self.ensure_one()
         invoice = self.move_line_id.invoice_id
-        if hasattr(invoice, 'commercial_partner_id'):
-            return invoice.commercial_partner_id
-        else:
-            return invoice.partner_id
+    
+        return invoice.so_id.partner_invoice_id
+        # HS 12.09.2017, Ebev wanted this to be changed
+        # if hasattr(invoice, 'commercial_partner_id'):
+        #     return invoice.commercial_partner_id
+        # else:
+        #     return invoice.partner_id
 
     @api.multi
     def _validate(self):
