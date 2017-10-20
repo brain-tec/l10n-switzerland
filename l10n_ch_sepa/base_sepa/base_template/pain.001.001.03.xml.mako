@@ -53,6 +53,7 @@
           <PmtId>
             <EndToEndId>${line.name}</EndToEndId>
           </PmtId>
+          <% sepa_context['line'] = line %>
           <%block name="PmtTpInf"/>
           <Amt>
             <InstdAmt Ccy="${line.currency.name}">${line.amount_currency}</InstdAmt>
