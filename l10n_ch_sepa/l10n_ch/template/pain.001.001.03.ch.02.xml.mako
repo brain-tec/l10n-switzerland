@@ -46,24 +46,25 @@
    <%
    line=sepa_context['line']
    invoice = line.move_line_id.invoice
+   bank = invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0])
    %>
-   % if invoice.partner_bank_id.state == 'bvr':
+   % if bank.state == 'bvr':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH01</Prtry>
               </LclInstrm>
           </PmtTpInf>
-   % elif invoice.partner_bank_id.state == 'bv':
+   % elif bank.state == 'bv':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH02</Prtry>
               </LclInstrm>
           </PmtTpInf>
-   % elif invoice.partner_bank_id.state in ('iban', 'bank'):
+   % elif bank.state in ('iban', 'bank'):
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH03</Prtry>
-                  <% invoice.partner_bank_id.state %>
+                  <% bank.state %>
               </LclInstrm>
           </PmtTpInf>
    % endif
