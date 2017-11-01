@@ -21,15 +21,13 @@
 #    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 #    GNU Affero General Public License for more details.
 #
-#    You should have received a copy of the GNU Affero General Public License
-#    along with this program.  If not, see <http://www.gnu.org/licenses/>.
-#
 ##############################################################################
-
+#
+#    License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
 
 {
     'name': 'Switzerland - Payroll',
-    'summary': 'Swizerland Payroll Rules',
+    'summary': 'Switzerland Payroll Rules',
     'category': 'Localization',
     'author': "Open Net Sàrl,Odoo Community Association (OCA)",
     'depends': [
@@ -40,7 +38,7 @@
         'hr_attendance',
         'account'
     ],
-    'version': '9.0.1.3.0',
+    'version': '9.0.1.4.0',
     'auto_install': False,
     'demo': [],
     'website': 'http://open-net.ch',

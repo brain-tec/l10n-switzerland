@@ -1,9 +1,8 @@
-# -*- coding: utf-8 -*-
 ##############################################################################
 #
-#    Swiss Postfinance File Delivery Services module for Odoo
-#    Copyright (C) 2014 Compassion CH
-#    @author: Nicolas Tran
+#    Swiss localization Direct Debit module for Odoo
+#    Copyright (C) 2014 Compassion (http://www.compassion.ch)
+#    @author: Cyril Sester <cyril.sester@outlook.com>
 #
 #    This program is free software: you can redistribute it and/or modify
 #    it under the terms of the GNU Affero General Public License as
@@ -20,4 +19,5 @@
 #
 ##############################################################################
 
-from . import payment_order_upload_dd_wizard
+from . import models
+from . import wizard
