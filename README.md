@@ -1,5 +1,5 @@
 [![Build Status](https://travis-ci.org/OCA/l10n-switzerland.svg?branch=7.0)](https://travis-ci.org/OCA/l10n-switzerland)
-[![Coverage Status](https://coveralls.io/repos/OCA/l10n-switzerland/badge.png?branch=7.0)](https://coveralls.io/r/OCA/l10n-switzerland?branch=7.0)
+[![Coverage Status](https://coveralls.io/repos/OCA/l10n-switzerland/badge.svg?branch=7.0)](https://coveralls.io/r/OCA/l10n-switzerland?branch=7.0)
 
 
 Odoo/OpenERP Swiss Localization
@@ -62,3 +62,8 @@ l10n_ch_scan_bvr
 ----------------
 
 Allows you to scan the ESR/BVR references and automatically create the proper supplier invoices
+
+
+Translation Status
+------------------
+[![Transifex Status](https://www.transifex.com/projects/p/OCA-l10n-switzerland-7-0/chart/image_png)](https://www.transifex.com/projects/p/OCA-l10n-switzerland-7-0)
