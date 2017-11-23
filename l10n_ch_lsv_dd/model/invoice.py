@@ -495,28 +495,34 @@ class AccountInvoice(models.Model):
         if cron_args:
             if 'force' in cron_args:
                 force_exec = cron_args['force']
-            if 'date_invoice' in cron_args:
-                date_filter = cron_args['date_invoice']
+            if 'date_due' in cron_args:
+                date_filter = cron_args['date_due']
 
-        invoice_search_params =[]
+        invoice_search_params = []
         if date_filter:
             try:
                 datetime.strptime(date_filter, '%Y-%m-%d')
-                invoice_search_params.append(('date_invoice', '<=', date_filter))
-                _logger.info("send_lsv_dd: process all invoices until {0}".format(date_filter))
+                invoice_search_params.append(('date_due', '<=', date_filter))
+                _logger.info("send_lsv_dd: process all invoices due until {0}".format(date_filter))
             except ValueError:
                 _logger.error("send_lsv_dd: could not extract date from {0}".format(date_filter))
                 lsv_dd_error_obj.add_error("Could not extract date from ".str(date_filter), 'lsv')
+        else:
+            # [bt#85] take only invoice due until today
+            today_date = datetime.now().strftime('%Y-%m-%d')
+            print 'today_date', today_date
+            invoice_search_params.append(('date_due', '<=', today_date))
 
         for company in self.env['res.company'].search([]):
             if not self._test_send_lsv_dd(company) and not force_exec:
                 _logger.info("send_lsv_dd: not the right timeframe")
                 continue
-            # Gets the paid invoices from this company.
+            # Gets open invoices from this company.
             invoice_search_params.append(('company_id', '=', company.id))
             invoice_search_params.append(('state', '=', 'open'))
             invoice_search_params.append(('residual', '!=', 0.0))
             invoice_search_params.append(('type', '=', 'out_invoice'))
+
             open_invoices = self.search(invoice_search_params)
             _logger.info("send_lsv_dd: found {0} open invoices".format(len(open_invoices)))
 
