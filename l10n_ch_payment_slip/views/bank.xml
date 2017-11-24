@@ -6,7 +6,7 @@
       <field name="model">res.partner.bank</field>
       <field name="inherit_id" ref="base.view_partner_bank_form"/>
       <field name="arch" type="xml">
-        <xpath expr="//group/field[@name='acc_number']/.." position="after">
+        <xpath expr="//group[1]" position="after">
           <group string="BVR options" attrs="{'invisible': [('company_id' ,'=', False)]}" >
             <field name="bvr_adherent_num"/>
             <field name="print_bank"/>
