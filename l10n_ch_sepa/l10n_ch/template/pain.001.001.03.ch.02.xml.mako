@@ -22,7 +22,7 @@
    line=sepa_context['line']
    invoice = line.move_line_id.invoice
    %>
-   % if not invoice.partner_bank_id.state == 'bvr':
+   % if not (invoice and invoice.partner_bank_id and invoice.partner_bank_id.state == 'bvr'):
     ${parent.CdtrAgt()}
    % endif
 </%block>
@@ -47,7 +47,7 @@
    line=sepa_context['line']
    invoice = line.move_line_id.invoice
    %>
-   % if invoice.partner_bank_id.state == 'bvr':
+   % if invoice and invoice.partner_bank_id and invoice.partner_bank_id.state == 'bvr':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH01</Prtry>
