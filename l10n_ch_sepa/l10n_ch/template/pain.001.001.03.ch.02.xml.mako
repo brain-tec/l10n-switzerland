@@ -23,7 +23,7 @@
    invoice = line.move_line_id.invoice
    bank = invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0])
    %>
-   % if not (bank.state == 'bvr' or bank.state == 'bv'):
+   % if bank and not (bank.state == 'bvr' or bank.state == 'bv'):
     ${parent.CdtrAgt()}
    % endif
 </%block>
@@ -49,13 +49,13 @@
    invoice = line.move_line_id.invoice
    bank = invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0])
    %>
-   % if bank.state == 'bvr':
+   % if bank and bank.state == 'bvr':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH01</Prtry>
               </LclInstrm>
           </PmtTpInf>
-   % elif bank.state == 'bv':
+   % elif bank and bank.state == 'bv':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH02</Prtry>
