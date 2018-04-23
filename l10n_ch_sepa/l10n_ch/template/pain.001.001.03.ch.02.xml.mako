@@ -21,8 +21,9 @@
    <%
    line=sepa_context['line']
    invoice = line.move_line_id.invoice
+   bank = invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0])
    %>
-   % if not invoice.partner_bank_id.state == 'bvr':
+   % if not (bank.state == 'bvr' or bank.state == 'bv'):
     ${parent.CdtrAgt()}
    % endif
 </%block>
@@ -58,13 +59,6 @@
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH02</Prtry>
-              </LclInstrm>
-          </PmtTpInf>
-   % elif bank.state in ('iban', 'bank'):
-          <PmtTpInf>
-              <LclInstrm>
-                <Prtry>CH03</Prtry>
-                  <% bank.state %>
               </LclInstrm>
           </PmtTpInf>
    % endif
