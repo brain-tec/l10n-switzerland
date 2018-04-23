@@ -16,12 +16,12 @@
 
 <%block name="CdtrAgt">
 <%doc>\
-        For type 1, Creditor Agent shouldn't be delivered
+        For type 1, and 2.1 Creditor Agent shouldn't be delivered
 </%doc>\
    <%
-   line=sepa_context['line']
-   invoice = line.move_line_id.invoice
-   bank = invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0])
+   line = sepa_context['line']
+   invoice = line.move_line_id and line.move_line_id.invoice or False
+   bank = invoice and (invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
    %>
    % if bank and not (bank.state == 'bvr' or bank.state == 'bv'):
     ${parent.CdtrAgt()}
@@ -45,9 +45,9 @@
 
 </%doc>\
    <%
-   line=sepa_context['line']
-   invoice = line.move_line_id.invoice
-   bank = invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0])
+   line = sepa_context['line']
+   invoice = line.move_line_id and line.move_line_id.invoice or False
+   bank = invoice and (invoice.partner_bank_id or (invoicqe.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
    %>
    % if bank and bank.state == 'bvr':
           <PmtTpInf>
