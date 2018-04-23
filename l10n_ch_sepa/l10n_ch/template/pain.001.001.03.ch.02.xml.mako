@@ -66,10 +66,10 @@
 
 <%block name="RmtInf">
    <%
-   line=sepa_context['line']
-   invoice = line.move_line_id.invoice
+   line = sepa_context['line']
+   invoice = line.move_line_id and line.move_line_id.invoice or False
    %>
-   % if invoice.reference_type == 'bvr':
+   % if invoice and invoice.reference_type == 'bvr':
           <RmtInf>
             <Strd>
               <CdtrRefInf>
