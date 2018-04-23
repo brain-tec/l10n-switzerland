@@ -78,7 +78,8 @@
         <ReqdExctnDt>${line.date > today and line.date or today}</ReqdExctnDt>
         <Dbtr>
           <Nm>${order.user_id.company_id.name | filter_text}</Nm>\
-          ${self.address(order.user_id.company_id.partner_id) | filter_text}\
+            <!-- SIX ISO20022 Recommendation: Do not use. -->
+            <!--${self.address(order.user_id.company_id.partner_id) | filter_text}\-->
         </Dbtr>
         <DbtrAcct>\
           ${self.acc_id(order.mode.bank_id)}\
@@ -90,6 +91,7 @@
         </DbtrAgt>
         <CdtTrfTxInf>
           <PmtId>
+            <InstrId>${line.name}</InstrId>
             <EndToEndId>${line.name}</EndToEndId>
           </PmtId>
           <% sepa_context['line'] = line %>
@@ -130,6 +132,9 @@
               <PstlAdr>
                 %if partner.street:
                   <StrtNm>${partner.street | filter_text}</StrtNm>
+                %endif
+                %if partner.street_no:
+                  <BldgNb>${partner.street_no | filter_text}</BldgNb>
                 %endif
                 %if partner.zip:
                   <PstCd>${partner.zip | filter_text}</PstCd>
