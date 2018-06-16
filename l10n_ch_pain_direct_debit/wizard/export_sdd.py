@@ -28,9 +28,11 @@ from lxml import etree
 from openerp.tools.float_utils import float_round
 
 ACCEPTED_PAIN_FLAVOURS = (
-    # 'pain.001.001.03.ch.02',
-    # 'pain.008.001.02.ch.01',
-    'pain.008.001.02.ch.03'
+    'pain.001.001.03.ch.02',
+    'pain.008.001.02.ch.01',
+    'pain.008.001.03.ch.01',
+    'pain.008.001.02.ch.03',
+    'pain.008.001.03.ch.03'
 )
 PAIN_SEPA_DD_CH = 'pain.008.001.03.ch.01'
 
@@ -164,6 +166,33 @@ class BankingExportSddWizard(models.TransientModel):
                 subtree.getparent().remove(subtree)
 
         return group_header, nb_of_transactions_a, control_sum_a
+
+
+    @api.model
+    def generate_initiating_party_block(self, parent_node, gen_args):
+        if gen_args.get('pain_flavor') not in ACCEPTED_PAIN_FLAVOURS:
+            return super(BankingExportSddWizard, self).generate_initiating_party_block(parent_node,gen_args)
+
+        my_company_name = self._prepare_field(
+            'Company Name',
+            'self.payment_order_ids[0].mode.bank_id.partner_id.name',
+            {'self': self}, gen_args.get('name_maxsize'), gen_args=gen_args)
+        initiating_party_1_8 = etree.SubElement(parent_node, 'InitgPty')
+        initiating_party_name = etree.SubElement(initiating_party_1_8, 'Nm')
+        initiating_party_name.text = my_company_name
+
+        bank = self.payment_order_ids[0].mode.bank_id
+        initiating_party_identifier = \
+            bank.post_dd_identifier or bank.lsv_identifier
+        iniparty_id = etree.SubElement(initiating_party_1_8, 'Id')
+        iniparty_org_id = etree.SubElement(iniparty_id, 'OrgId')
+        iniparty_org_other = etree.SubElement(iniparty_org_id, 'Othr')
+        iniparty_org_other_id = etree.SubElement(iniparty_org_other, 'Id')
+
+        #identifier for either CHTA or CHDD
+        iniparty_org_other_id.text = initiating_party_identifier
+
+        return True
 
     @api.model
     def generate_start_payment_info_block(

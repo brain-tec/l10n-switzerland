@@ -12,6 +12,7 @@
     "depends": [
         "l10n_ch_pain_base",
         "account_banking_sepa_direct_debit",
+        "l10n_ch_lsv_dd"
     ],
     'data': [
         'data/payment_type_sdd.xml'
