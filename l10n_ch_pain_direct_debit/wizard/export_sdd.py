@@ -21,20 +21,19 @@
 #
 ##############################################################################
 
-from openerp import models, fields, api, _
-from openerp.exceptions import Warning
-from openerp import workflow
 from lxml import etree
+
+from openerp import models, fields, api
+from openerp.exceptions import Warning
 from openerp.tools.float_utils import float_round
 
 ACCEPTED_PAIN_FLAVOURS = (
-    'pain.001.001.03.ch.02',
     'pain.008.001.02.ch.01',
     'pain.008.001.03.ch.01',
     'pain.008.001.02.ch.03',
     'pain.008.001.03.ch.03'
 )
-PAIN_SEPA_DD_CH = 'pain.008.001.03.ch.01'
+PAIN_SEPA_DD_CH = 'pain.008.001.02.ch.03'
 
 
 def xml_remove_tag(root, tag):
@@ -42,7 +41,7 @@ def xml_remove_tag(root, tag):
     if el is not None:
         el.getparent().remove(el)
     else:
-        raise ValueError('element %s not founf' % tag)
+        raise ValueError('element %s not found' % tag)
     return el
 
 
@@ -167,11 +166,10 @@ class BankingExportSddWizard(models.TransientModel):
 
         return group_header, nb_of_transactions_a, control_sum_a
 
-
     @api.model
     def generate_initiating_party_block(self, parent_node, gen_args):
-        if gen_args.get('pain_flavor') not in ACCEPTED_PAIN_FLAVOURS:
-            return super(BankingExportSddWizard, self).generate_initiating_party_block(parent_node,gen_args)
+        if gen_args.get('pain_flavor') != PAIN_SEPA_DD_CH:
+            return super(BankingExportSddWizard, self).generate_initiating_party_block(parent_node, gen_args)
 
         my_company_name = self._prepare_field(
             'Company Name',
@@ -189,7 +187,7 @@ class BankingExportSddWizard(models.TransientModel):
         iniparty_org_other = etree.SubElement(iniparty_org_id, 'Othr')
         iniparty_org_other_id = etree.SubElement(iniparty_org_other, 'Id')
 
-        #identifier for either CHTA or CHDD
+        # identifier for either CHTA or CHDD
         iniparty_org_other_id.text = initiating_party_identifier
 
         return True
@@ -243,6 +241,7 @@ class BankingExportSddWizard(models.TransientModel):
                 prtry_value = 'CHDD'
             else:
                 prtry_value = 'CHTA'
+            gen_args['service_level'] = prtry_value
             service_level_value.text = prtry_value
 
             # <PmtInf>/<PmtTpInf>/  <LclInstrm>
@@ -288,13 +287,16 @@ class BankingExportSddWizard(models.TransientModel):
             # account number (9 digits. Thus we have to check and use the correct identification
             # format.
             acc = partner_bank.acc_number.replace('-', '').replace(' ', '')
+            needs_iban = party_type == 'Cdtr'
             if partner_bank.is_iban_valid(partner_bank.acc_number):
                 party_account_iban = etree.SubElement(party_account_id, 'IBAN')
                 party_account_iban.text = acc
-            elif len(acc) == 9:
+            elif not needs_iban and len(acc) == 9:
                 othr = etree.SubElement(party_account_id, 'Othr')
                 othr_id = etree.SubElement(othr, 'Id')
                 othr_id.text = acc
+            else:
+                raise Warning("The proivded bank account number %s is invalid." % partner_bank.acc_number)
             res = True
 
         else:
@@ -326,12 +328,14 @@ class BankingExportSddWizard(models.TransientModel):
             party_agent_clearing_identification.text = \
                 partner_bank.bank.clearing.zfill(5)
 
-            # <CdtrAgt>/<FinInstnId>/  <Othr>
-            party_agent_other = \
-                etree.SubElement(party_agent_institution, 'Othr')
-            party_agent_other_identification = \
-                etree.SubElement(party_agent_other, 'Id')
-            party_agent_other_identification.text = 'NOTPROVIDED'
+            if gen_args.get('service_level') == 'CHTA':
+                # <CdtrAgt>/<FinInstnId>/  <Othr>
+                party_agent_other = \
+                    etree.SubElement(party_agent_institution, 'Othr')
+                party_agent_other_identification = \
+                    etree.SubElement(party_agent_other, 'Id')
+                party_agent_other_identification.text = partner_bank.esr_party_number \
+                                                        or 'NOTPROVIDED'
             res = True
 
         else:
@@ -424,7 +428,8 @@ class BankingExportSddWizard(models.TransientModel):
     @api.model
     def generate_remittance_info_block(self, parent_node, line, gen_args):
         super(BankingExportSddWizard, self).generate_remittance_info_block(parent_node, line, gen_args)
-        if gen_args.get('pain_flavor') == PAIN_SEPA_DD_CH:
+        if gen_args.get('pain_flavor') == PAIN_SEPA_DD_CH \
+                and gen_args.get('service_level') == 'CHTA':
             remittance_info_2_91 = parent_node.find("./RmtInf")
 
             xml_remove_tag(remittance_info_2_91, "Ustrd")
@@ -572,10 +577,18 @@ class BankingExportSddWizard(models.TransientModel):
             # <PmtInf>/  <CdtrSchmeId>
             creditor_scheme_identification = \
                 etree.SubElement(payment_info, 'CdtrSchmeId')
+
+            prty = False
+            ident = False
+            if gen_args.get('service_level') == 'CHDD':
+                prty = 'CHDD'
+                ident = 'self.payment_order_ids[0].mode.bank_id.post_dd_identifier'
+            else: #CHTA
+                prty = 'CHLS'
+                ident = 'self.payment_order_ids[0].mode.bank_id.lsv_identifier'
             self.generate_creditor_scheme_identification(
                 creditor_scheme_identification,
-                # 'self.payment_order_ids[0].initiating_party_identifier or '   TODO: add the fields somewhere
-                'self.payment_order_ids[0].company_id.initiating_party_identifier',
+                ident,
                 'SEPA Creditor Identifier', {'self': self}, 'CHDD', gen_args)
 
             # <PmtInf>/  <DrctDbtTxInf>
