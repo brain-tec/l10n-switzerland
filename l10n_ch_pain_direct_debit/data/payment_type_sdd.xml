@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <openerp>
 <data noupdate="0">
-    <record id="export_sdd_008_001_04" model="payment.mode.type">
+    <record id="export_sdd_008_001_02_ch_03" model="payment.mode.type">
         <field name="name">Swiss Direct Debit pain.008</field>
         <field name="code">pain.008.001.02.ch.03</field>
         <field name="suitable_bank_types"
