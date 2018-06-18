@@ -589,7 +589,7 @@ class BankingExportSddWizard(models.TransientModel):
             self.generate_creditor_scheme_identification(
                 creditor_scheme_identification,
                 ident,
-                'SEPA Creditor Identifier', {'self': self}, 'CHDD', gen_args)
+                'SEPA Creditor Identifier', {'self': self}, prty, gen_args)
 
             # <PmtInf>/  <DrctDbtTxInf>
             self.generate_dd_transaction_information(
