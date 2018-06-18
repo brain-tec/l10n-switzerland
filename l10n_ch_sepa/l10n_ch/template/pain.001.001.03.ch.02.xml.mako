@@ -58,7 +58,17 @@
    <%
    line=sepa_context['line']
    %>
-   % if line.bank_id.state == 'bvr':
+<%doc>\
+Strd:
+Art 1 (ESR): Muss verwendet werden.
+Art 2.1, 2.2 (ES 1-stufig, ES 2-stufig): Darf nicht verwendet werden.
+Art 3: Darf verwendet werden. In Zusammenhang
+mit QR-IBAN (gültig ab 01.01.2019) muss dieses
+Element verwendet werden.
+Art 4, 5, 6, 7, 8: Darf maximal 140 Zeichen
+einschliesslich XML-Tags beinhalten.
+</%doc>\
+   % if line.communication:
           <RmtInf>
             <Strd>
               <CdtrRefInf>
