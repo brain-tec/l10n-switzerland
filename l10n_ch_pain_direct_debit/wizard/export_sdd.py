@@ -603,7 +603,6 @@ class BankingExportSddWizard(models.TransientModel):
                                    for bank_line in self.bank_line_ids), 2)
         control_sum_a.text = str(ctrl_sum)
 
-        open("sepa_ch_test.xml", 'w').write(etree.tostring(xml_root, pretty_print=1))
         return self.finalize_sepa_file_creation(xml_root, sum(self.payment_order_ids.mapped('total')),
                                                 nb_of_transactions_a, gen_args)
 
