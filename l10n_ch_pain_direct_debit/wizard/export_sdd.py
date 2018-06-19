@@ -296,7 +296,8 @@ class BankingExportSddWizard(models.TransientModel):
                 othr_id = etree.SubElement(othr, 'Id')
                 othr_id.text = acc
             else:
-                raise Warning("The proivded bank account number %s is invalid." % partner_bank.acc_number)
+                #TODO: improve error message
+                raise Warning("The provided bank account number %s is invalid." % partner_bank.acc_number)
             res = True
 
         else:

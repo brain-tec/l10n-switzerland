@@ -21,17 +21,30 @@
 
 from base64 import decodestring
 
-from openerp import models
+from openerp import models, fields
 from .export_sdd import PAIN_SEPA_DD_CH
 
 
 class DDExportWizard(models.TransientModel):
     _inherit = 'post.dd.export.wizard'
 
+    filetype = fields.Selection([
+        ('dd', 'DD Text File'),
+        ('xml', 'pain.008 XML File')
+    ], default='xml', string="Filetype", required=True)
+
     def _generate_dd_filecontent(self, pmt_order):
-        if pmt_order.line_ids and pmt_order.mode.type.code == PAIN_SEPA_DD_CH:
+        if pmt_order.line_ids and self.filetype == 'xml' and pmt_order.mode.type.code == PAIN_SEPA_DD_CH:
             wizard = self.env['banking.export.sdd.wizard'].with_context(active_ids=pmt_order.ids).create({})
-            properties = {}
+            properties = {'seq_nb': len(pmt_order.line_ids)}
             wizard.generate_xml_ch_dd_file()
             return decodestring(wizard.file), properties
         return super(DDExportWizard, self)._generate_dd_file_content(pmt_order)
+
+    def _create_dd_export(self, p_o_ids, total_amount,
+                          properties, file_content):
+
+        r = super(DDExportWizard, self)._create_dd_export(p_o_ids, total_amount, properties, file_content)
+        if self.filetype == 'xml':
+            r.filename = r.filename.replace('.dd', '.xml')
+        return r
