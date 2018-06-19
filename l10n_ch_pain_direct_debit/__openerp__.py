@@ -15,6 +15,8 @@
         "l10n_ch_lsv_dd"
     ],
     'data': [
+        'views/dd_export_wizard.xml',
+        'views/lsv_export_wizard.xml',
         'data/payment_type_sdd.xml'
     ],
     'installable': True,
