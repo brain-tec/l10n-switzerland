@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+
+        <!-- Inherit Form View to Modify it -->
+        <record id="view_payment_mode_form_ext" model="ir.ui.view">
+            <field name="name">view_payment_mode_form_ext</field>
+            <field name="model">payment.mode</field>
+            <field name="inherit_id" ref="account_payment.view_payment_mode_form"/>
+            <field name="arch" type="xml">
+
+                <xpath expr="//group[1]" position="after">
+                    <group>
+                        <field name="payment_method" />
+                        <field name="batchbooking" />
+                    </group>
+                </xpath>
+
+            </field>
+        </record>
+
+    </data>
+</openerp>

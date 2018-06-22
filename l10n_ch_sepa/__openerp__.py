@@ -51,6 +51,8 @@ It currently supports the "pain.001" norm for Credit Transfert Initiation.
         "account_payment",
     ],
     "data": [
+        "base_sepa/view/account_payment_view_ext.xml",
+
         "wizard/wiz_pain_001_view.xml",
     ],
     "test": [
