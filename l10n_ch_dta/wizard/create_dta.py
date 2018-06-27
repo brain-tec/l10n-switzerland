@@ -579,7 +579,10 @@ class DTAFileGenerator(models.TransientModel):
         co_addr = company.partner_id
         co = co_addr.country_id.name if co_addr.country_id else ''
         elec_context['comp_country'] = co
-        elec_context['comp_street'] = co_addr.street or ''
+        if co_addr.street:
+            elec_context['comp_street'] = re.sub(r'[ \t\r\n]+', r' ', co_addr.street.strip())
+        else:
+            elec_context['comp_street'] = ""
         elec_context['comp_zip'] = co_addr.zip
         elec_context['comp_city'] = co_addr.city
         elec_context['comp_name'] = co_addr.name
