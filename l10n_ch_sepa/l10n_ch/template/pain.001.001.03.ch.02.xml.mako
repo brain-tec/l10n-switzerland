@@ -20,14 +20,8 @@
 </%doc>\
    <%
    line=sepa_context['line']
-   invoice = line.move_line_id and line.move_line_id.invoice or False
-   bank = invoice and (invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
    %>
-<%doc>\
-   Not all paymant order lines haave invoice assigned. Not mandatory field!
-</%doc>\
-
-   % if bank and not (bank.state == 'bvr' or bank.state == 'bv'):
+   % if not line.bank_id.state == 'bvr':
     ${parent.CdtrAgt()}
    % endif
 </%block>
@@ -50,19 +44,11 @@
 </%doc>\
    <%
    line=sepa_context['line']
-   invoice = line.move_line_id and line.move_line_id.invoice or False
-   bank = invoice and (invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
    %>
-   % if bank and bank.state == 'bvr':
+   % if line.bank_id.state == 'bvr':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH01</Prtry>
-              </LclInstrm>
-          </PmtTpInf>
-   % elif bank and bank.state == 'bv':
-          <PmtTpInf>
-              <LclInstrm>
-                <Prtry>CH02</Prtry>
               </LclInstrm>
           </PmtTpInf>
    % endif
@@ -71,13 +57,12 @@
 <%block name="RmtInf">
    <%
    line=sepa_context['line']
-   invoice = line.move_line_id and line.move_line_id.invoice or False
    %>
-   % if invoice and invoice.reference_type == 'bvr':
+   % if line.bank_id.state == 'bvr':
           <RmtInf>
             <Strd>
               <CdtrRefInf>
-                <Ref>${invoice.reference}</Ref>
+                <Ref>${line.communication}</Ref>
               </CdtrRefInf>
             </Strd>
           </RmtInf>
