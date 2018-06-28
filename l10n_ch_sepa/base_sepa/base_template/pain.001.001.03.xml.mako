@@ -132,9 +132,15 @@ today = thetime.strftime("%Y-%m-%d")
 \
 <%def name="address(partner)">\
               <PstlAdr>
-                %if partner.street:
-                  <StrtNm>${partner.street.strip() | filter_text}</StrtNm>
-                %endif
+
+<%
+    import re
+    partner_street = ""
+    if partner.street:
+        partner_street = re.sub(r'[ \t\r\n]+', r' ', partner.street.strip())
+%>
+                <StrtNm>${partner_street | filter_text}</StrtNm>
+
                 %if partner.zip:
                   <PstCd>${partner.zip | filter_text}</PstCd>
                 %endif
