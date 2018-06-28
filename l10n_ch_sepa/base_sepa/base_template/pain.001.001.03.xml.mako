@@ -64,21 +64,15 @@
   in sub blocks and inheritages. Because, for now, only unamed
   blocks and def in mako can use a local for loop variable.
 </%doc>
-<%
-first_line = order.line_ids[0] if order.line_ids else None
-today = thetime.strftime("%Y-%m-%d")
-%>
-<% sepa_context['line'] = first_line %>\
 <%block name="PmtInf">\
 <%
-line = sepa_context['line']
 today = thetime.strftime("%Y-%m-%d")
 %>
 <PmtInf>
-    <PmtInfId>${line.name if line else ''}</PmtInfId>
+    <PmtInfId>${order.reference}</PmtInfId>
     <PmtMtd>${order.mode.payment_method if order.mode else ''}</PmtMtd>
     <BtchBookg>${'true' if order.mode and order.mode.batchbooking else 'false'}</BtchBookg>
-    <ReqdExctnDt>${(line.date > today and line.date or today) if line else ''}</ReqdExctnDt>
+    <ReqdExctnDt>${ order.date_scheduled and order.date_scheduled > today or today}</ReqdExctnDt>
     <Dbtr>
       <Nm>${order.user_id.company_id.name | filter_text }</Nm>\
       <!-- SIX ISO20022 Recommendation: Do not use. -->
@@ -93,7 +87,7 @@ today = thetime.strftime("%Y-%m-%d")
       </FinInstnId>
     </DbtrAgt>
 % for line in order.line_ids:
-
+        <% sepa_context['line'] = line %>\
         <CdtTrfTxInf>
           <PmtId>
               <!-- ZKB mandatory field -->
@@ -139,7 +133,7 @@ today = thetime.strftime("%Y-%m-%d")
 <%def name="address(partner)">\
               <PstlAdr>
                 %if partner.street:
-                  <StrtNm>${partner.street | filter_text}</StrtNm>
+                  <StrtNm>${partner.street.strip() | filter_text}</StrtNm>
                 %endif
                 %if partner.zip:
                   <PstCd>${partner.zip | filter_text}</PstCd>
