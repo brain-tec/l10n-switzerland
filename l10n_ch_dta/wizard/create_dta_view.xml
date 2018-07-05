@@ -34,5 +34,8 @@
             <field name="key">action</field>
             <field name="model">payment.order</field>
         </record>
+
+        <!-- bt#2508 -->
+        <delete id="action_account_dtr_create_values" model="ir.values"/>
     </data>
 </openerp>
