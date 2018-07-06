@@ -69,10 +69,10 @@
 today = thetime.strftime("%Y-%m-%d")
 %>
 <PmtInf>
-    <PmtInfId>${order.reference}</PmtInfId>
+    <PmtInfId>${order.reference | filter_text}</PmtInfId>
     <PmtMtd>${order.mode.payment_method if order.mode else ''}</PmtMtd>
     <BtchBookg>${'true' if order.mode and order.mode.batchbooking else 'false'}</BtchBookg>
-    <ReqdExctnDt>${ order.date_scheduled and order.date_scheduled > today or today}</ReqdExctnDt>
+    <ReqdExctnDt>${ (order.date_scheduled and order.date_scheduled > today and order.date_scheduled) or today}</ReqdExctnDt>
     <Dbtr>
       <Nm>${order.user_id.company_id.name | filter_text }</Nm>\
       <!-- SIX ISO20022 Recommendation: Do not use. -->
