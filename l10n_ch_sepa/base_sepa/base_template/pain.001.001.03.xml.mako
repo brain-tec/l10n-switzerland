@@ -139,8 +139,9 @@ today = thetime.strftime("%Y-%m-%d")
     if partner.street:
         partner_street = re.sub(r'[ \t\r\n]+', r' ', partner.street.strip())
 %>
+                %if partner_street:
                 <StrtNm>${partner_street | filter_text}</StrtNm>
-
+                %endif
                 %if partner.zip:
                   <PstCd>${partner.zip | filter_text}</PstCd>
                 %endif
