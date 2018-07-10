@@ -44,14 +44,14 @@ class AccountInvoice(models.Model):
                 if partner.bank_ids:
                     bank_id = partner.bank_ids[0].id
                 res['value']['partner_bank_id'] = bank_id
-            else:
-                user = self.env.user
-                bank_ids = user.company_id.partner_id.bank_ids
-                if bank_ids:
-                    res['value']['partner_bank_id'] = bank_ids[0].id
-                    bank_id = bank_ids[0].id
-        if partner_bank_id != bank_id:
-            res['value']['partner_bank_id'] = bank_id
+            # else:
+            #     user = self.env.user
+            #     bank_ids = user.company_id.partner_id.bank_ids
+            #     if bank_ids:
+            #         res['value']['partner_bank_id'] = bank_ids[0].id
+            #         bank_id = bank_ids[0].id
+                if partner_bank_id != bank_id:
+                    res['value']['partner_bank_id'] = bank_id
         return res
 
     @api.multi
