@@ -46,8 +46,10 @@
 
     def truncate_70(text):
         return text[0:69]
+
     def remove_special_chars(text):
         return re.sub(r'([^a-zA-Z0-9\.,;:\'\+\-/\(\)?\*\[\]\{\}\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])', ' ', text)
+
 %>
   <CstmrCdtTrfInitn>
     <GrpHdr>
@@ -104,6 +106,7 @@ today = thetime.strftime("%Y-%m-%d")
               <InstrId>${line.name}</InstrId>
               <EndToEndId>${line.name}</EndToEndId>
           </PmtId>
+          <% sepa_context['line'] = line %>
           <%block name="PmtTpInf"/>
           <Amt>
             <InstdAmt Ccy="${line.currency.name}">${line.amount_currency}</InstdAmt>
@@ -148,8 +151,8 @@ today = thetime.strftime("%Y-%m-%d")
     if partner.street:
         partner_street = re.sub(r'[ \t\r\n]+', r' ', partner.street.strip())
 %>
-                %if partner_street:
-                <StrtNm>${partner_street | filter_text}</StrtNm>
+                %if partner.street:
+                  <StrtNm>${partner_street | filter_text}</StrtNm>
                 %endif
                 %if partner.zip:
                   <PstCd>${partner.zip | filter_text}</PstCd>
