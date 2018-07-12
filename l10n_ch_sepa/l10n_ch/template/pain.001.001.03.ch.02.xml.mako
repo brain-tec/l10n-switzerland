@@ -20,9 +20,8 @@
 </%doc>\
    <%
    line=sepa_context['line']
-   invoice = line.move_line_id.invoice
    %>
-   % if not invoice.partner_bank_id.state == 'bvr':
+   % if not line.bank_id.state == 'bvr':
     ${parent.CdtrAgt()}
    % endif
 </%block>
@@ -45,25 +44,11 @@
 </%doc>\
    <%
    line=sepa_context['line']
-   invoice = line.move_line_id.invoice
    %>
-   % if invoice.partner_bank_id.state == 'bvr':
+   % if line.bank_id.state == 'bvr':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH01</Prtry>
-              </LclInstrm>
-          </PmtTpInf>
-   % elif invoice.partner_bank_id.state == 'bv':
-          <PmtTpInf>
-              <LclInstrm>
-                <Prtry>CH02</Prtry>
-              </LclInstrm>
-          </PmtTpInf>
-   % elif invoice.partner_bank_id.state in ('iban', 'bank'):
-          <PmtTpInf>
-              <LclInstrm>
-                <Prtry>CH03</Prtry>
-                  <% invoice.partner_bank_id.state %>
               </LclInstrm>
           </PmtTpInf>
    % endif
@@ -72,13 +57,12 @@
 <%block name="RmtInf">
    <%
    line=sepa_context['line']
-   invoice = line.move_line_id.invoice
    %>
-   % if invoice.reference_type == 'bvr':
+   % if line.bank_id.state == 'bvr':
           <RmtInf>
             <Strd>
               <CdtrRefInf>
-                <Ref>${invoice.reference}</Ref>
+                <Ref>${line.communication}</Ref>
               </CdtrRefInf>
             </Strd>
           </RmtInf>

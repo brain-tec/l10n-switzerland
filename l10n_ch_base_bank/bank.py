@@ -144,6 +144,7 @@ class Bank(models.Model, BankCommon):
                         break
         else:
             ids = self.search(
+                args,
                 limit=limit
                 ).ids
         # we sort by occurence

@@ -4,6 +4,8 @@
 </%block>\
 \
 <%!
+    import re
+
     def filter_text(text):
         # Mapping between Latin-1 to ascii characters, used also for LSV.
         LSV_LATIN1_TO_ASCII_MAPPING = {
@@ -41,6 +43,13 @@
         }
         text = ''.join([LSV_LATIN1_TO_ASCII_MAPPING.get(ord(ch), ch) for ch in text])
         return text
+
+    def truncate_70(text):
+        return text[0:69]
+
+    def remove_special_chars(text):
+        return re.sub(r'([^a-zA-Z0-9\.,;:\'\+\-/\(\)?\*\[\]\{\}\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])', ' ', text)
+
 %>
   <CstmrCdtTrfInitn>
     <GrpHdr>
@@ -52,10 +61,13 @@
       %>
       <CtrlSum>${control_sum}</CtrlSum>\
       <%block name="InitgPty">
-        <InitgPty>
-          <Nm>${order.user_id.company_id.name | filter_text}</Nm>\
-          ${address(order.user_id.company_id.partner_id) | filter_text}\
-        </InitgPty>\
+            <InitgPty>
+              <Nm>${order.user_id.company_id.name | filter_text,remove_special_chars,truncate_70}</Nm>
+              <CtctDtls>
+                <Nm>OpenERP - SEPA Payments - by Camptocamp</Nm>
+                <Othr>${module_version}</Othr>
+              </CtctDtls>
+            </InitgPty>
       </%block>
     </GrpHdr>\
 <%doc>\
@@ -64,24 +76,19 @@
   in sub blocks and inheritages. Because, for now, only unamed
   blocks and def in mako can use a local for loop variable.
 </%doc>
-<%
-first_line = order.line_ids[0] if order.line_ids else None
-today = thetime.strftime("%Y-%m-%d")
-%>
-<% sepa_context['line'] = first_line %>\
 <%block name="PmtInf">\
 <%
-line = sepa_context['line']
 today = thetime.strftime("%Y-%m-%d")
 %>
 <PmtInf>
-    <PmtInfId>${line.name if line else ''}</PmtInfId>
+    <PmtInfId>${order.reference}</PmtInfId>
     <PmtMtd>${order.mode.payment_method if order.mode else ''}</PmtMtd>
     <BtchBookg>${'true' if order.mode and order.mode.batchbooking else 'false'}</BtchBookg>
-    <ReqdExctnDt>${(line.date > today and line.date or today) if line else ''}</ReqdExctnDt>
+    <ReqdExctnDt>${(order.date_scheduled and order.date_scheduled > today and order.date_scheduled) or today}</ReqdExctnDt>
     <Dbtr>
-      <Nm>${order.user_id.company_id.name | filter_text }</Nm>\
-      ${self.address(order.user_id.company_id.partner_id) | filter_text}\
+      <Nm>${order.user_id.company_id.name | filter_text,remove_special_chars,truncate_70 }</Nm>\
+      <!-- SIX ISO20022 Recommendation: Do not use. -->
+        <!--${self.address(order.user_id.company_id.partner_id) | filter_text}\-->
     </Dbtr>
     <DbtrAcct>\
       ${self.acc_id(order.mode.bank_id)}\
@@ -92,10 +99,12 @@ today = thetime.strftime("%Y-%m-%d")
       </FinInstnId>
     </DbtrAgt>
 % for line in order.line_ids:
-
+        <% sepa_context['line'] = line %>\
         <CdtTrfTxInf>
           <PmtId>
-            <EndToEndId>${line.name}</EndToEndId>
+              <!-- ZKB mandatory field -->
+              <InstrId>${line.name}</InstrId>
+              <EndToEndId>${line.name}</EndToEndId>
           </PmtId>
           <% sepa_context['line'] = line %>
           <%block name="PmtTpInf"/>
@@ -116,7 +125,7 @@ today = thetime.strftime("%Y-%m-%d")
             </CdtrAgt>
           </%block>
           <Cdtr>
-            <Nm>${line.partner_id.name | filter_text}</Nm>\
+            <Nm>${line.partner_id.name | filter_text,remove_special_chars,truncate_70}</Nm>\
             ${self.address(line.partner_id) | filter_text}\
           </Cdtr>
           <CdtrAcct>\
@@ -136,8 +145,14 @@ today = thetime.strftime("%Y-%m-%d")
 \
 <%def name="address(partner)">\
               <PstlAdr>
+
+<%
+    partner_street = ""
+    if partner.street:
+        partner_street = re.sub(r'[ \t\r\n]+', r' ', partner.street.strip())
+%>
                 %if partner.street:
-                  <StrtNm>${partner.street | filter_text}</StrtNm>
+                  <StrtNm>${partner_street | filter_text}</StrtNm>
                 %endif
                 %if partner.zip:
                   <PstCd>${partner.zip | filter_text}</PstCd>
