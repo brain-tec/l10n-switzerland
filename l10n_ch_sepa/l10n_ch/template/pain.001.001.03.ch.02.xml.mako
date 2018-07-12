@@ -4,16 +4,6 @@
 <Document xmlns="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd pain.001.001.03.ch.02.xsd">
 </%block>
 
-<%block name="InitgPty">
-        <InitgPty>
-          <Nm>${order.user_id.company_id.name}</Nm>
-          <CtctDtls>
-            <Nm>OpenERP - SEPA Payments - by Camptocamp</Nm>
-            <Othr>${module_version}</Othr>
-          </CtctDtls>
-        </InitgPty>
-</%block>
-
 <%block name="CdtrAgt">
 <%doc>\
         For type 1, Creditor Agent shouldn't be delivered
