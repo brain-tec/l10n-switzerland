@@ -44,6 +44,12 @@ class AccountInvoice(models.Model):
                 if partner.bank_ids:
                     bank_id = partner.bank_ids[0].id
                 res['value']['partner_bank_id'] = bank_id
+            # t9861
+            # Customer change request:
+            # In order to avoid to change manually the bank on invoice creation,
+            # the bank on customer invoices will not be set automatically on partner change.
+            # Default value will be set for the users for customer invoices => Lines commented
+
             # else:
             #     user = self.env.user
             #     bank_ids = user.company_id.partner_id.bank_ids
@@ -116,6 +122,20 @@ class AccountInvoice(models.Model):
         if type_defined == 'out_invoice' and not vals.get('partner_bank_id'):
             user = self.env.user
             bank_ids = user.company_id.partner_id.bank_ids
-            if bank_ids:
+
+            # t9861
+            # Customer change request:
+            # In order to avoid to change manually the bank on invoice created from sale order,
+            # the bank on customer invoices will be set automatically to valid bvr bank account.
+            # Needed to generate and print BVR for invoices.
+
+            bvr_bank_ids = []
+            for bank_id in bank_ids:
+                if bank_id.state == 'bvr' and bank_id.bvr_adherent_num:
+                    bvr_bank_ids.append(bank_id)
+
+            if bvr_bank_ids:
+                vals['partner_bank_id'] = bvr_bank_ids[0].id
+            elif bank_ids:
                 vals['partner_bank_id'] = bank_ids[0].id
         return super(AccountInvoice, self).create(vals)
