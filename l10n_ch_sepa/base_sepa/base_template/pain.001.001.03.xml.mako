@@ -4,6 +4,8 @@
 </%block>\
 \
 <%!
+    import re
+
     def filter_text(text):
         # Mapping between Latin-1 to ascii characters, used also for LSV.
         LSV_LATIN1_TO_ASCII_MAPPING = {
@@ -41,6 +43,11 @@
         }
         text = ''.join([LSV_LATIN1_TO_ASCII_MAPPING.get(ord(ch), ch) for ch in text])
         return text
+
+    def truncate_70(text):
+        return text[0:69]
+    def remove_special_chars(text):
+        return re.sub(r'([^a-zA-Z0-9\.,;:\'\+\-/\(\)?\*\[\]\{\}\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])', ' ', text)
 %>
   <CstmrCdtTrfInitn>
     <GrpHdr>
@@ -52,10 +59,13 @@
       %>
       <CtrlSum>${control_sum}</CtrlSum>\
       <%block name="InitgPty">
-        <InitgPty>
-          <Nm>${order.user_id.company_id.name | filter_text}</Nm>\
-          ${address(order.user_id.company_id.partner_id) | filter_text}\
-        </InitgPty>\
+            <InitgPty>
+              <Nm>${order.user_id.company_id.name | filter_text,remove_special_chars,truncate_70}</Nm>
+              <CtctDtls>
+                <Nm>OpenERP - SEPA Payments - by Camptocamp</Nm>
+                <Othr>${module_version}</Othr>
+              </CtctDtls>
+            </InitgPty>
       </%block>
     </GrpHdr>\
 <%doc>\
@@ -69,12 +79,12 @@
 today = thetime.strftime("%Y-%m-%d")
 %>
 <PmtInf>
-    <PmtInfId>${order.reference}</PmtInfId>
+    <PmtInfId>${order.reference | filter_text}</PmtInfId>
     <PmtMtd>${order.mode.payment_method if order.mode else ''}</PmtMtd>
     <BtchBookg>${'true' if order.mode and order.mode.batchbooking else 'false'}</BtchBookg>
-    <ReqdExctnDt>${ order.date_scheduled and order.date_scheduled > today or today}</ReqdExctnDt>
+    <ReqdExctnDt>${(order.date_scheduled and order.date_scheduled > today and order.date_scheduled) or today}</ReqdExctnDt>
     <Dbtr>
-      <Nm>${order.user_id.company_id.name | filter_text }</Nm>\
+      <Nm>${order.user_id.company_id.name | filter_text,remove_special_chars,truncate_70 }</Nm>\
       <!-- SIX ISO20022 Recommendation: Do not use. -->
         <!--${self.address(order.user_id.company_id.partner_id) | filter_text}\-->
     </Dbtr>
@@ -112,7 +122,7 @@ today = thetime.strftime("%Y-%m-%d")
             </CdtrAgt>
           </%block>
           <Cdtr>
-            <Nm>${line.partner_id.name | filter_text}</Nm>\
+            <Nm>${line.partner_id.name | filter_text,remove_special_chars,truncate_70}</Nm>\
             ${self.address(line.partner_id) | filter_text}\
           </Cdtr>
           <CdtrAcct>\
@@ -134,7 +144,6 @@ today = thetime.strftime("%Y-%m-%d")
               <PstlAdr>
 
 <%
-    import re
     partner_street = ""
     if partner.street:
         partner_street = re.sub(r'[ \t\r\n]+', r' ', partner.street.strip())
