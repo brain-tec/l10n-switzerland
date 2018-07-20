@@ -80,7 +80,7 @@
         today = thetime.strftime("%Y-%m-%d")
         %>
       <PmtInf>
-        <PmtInfId>${order.reference}</PmtInfId>
+        <PmtInfId>${order.reference | filter_text}</PmtInfId>
         <PmtMtd>TRF</PmtMtd>
         <BtchBookg>true</BtchBookg>
         <ReqdExctnDt>${(order.date_scheduled and order.date_scheduled > today and order.date_scheduled) or today}</ReqdExctnDt>
