@@ -496,8 +496,13 @@ class BankingExportSddWizard(models.TransientModel):
             ori_debtor_agent_institution_clearing_identification = \
                 etree.SubElement(ori_debtor_agent_institution_clearing,
                                  'MmbId')
-            ori_debtor_agent_institution_clearing_identification.text = \
-                partner_bank.bank.clearing.zfill(5)
+            clearing = line.bank_id.bank.clearing or \
+                line.bank_id.iban.replace(' ', '')[4:9]
+            if not clearing:
+                raise UserWarning("Error while computing BCID of partner %s"
+                                  "Please provide a bank in the partners bank account with clearing number or "
+                                  "change the account to IBAN."%(line.partner.name))
+            ori_debtor_agent_institution_clearing_identification.text = clearing.zfill(5)
 
             # .../  <Dbtr>
             self.generate_party_block(
