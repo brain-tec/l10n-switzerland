@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <record id="account_payment_mode_form" model="ir.ui.view">
+        <field name="name">l10n_ch_base_credit_transfer.account.payment.mode.form</field>
+        <field name="model">account.payment.mode</field>
+        <field name="inherit_id" ref="account_payment_order.account_payment_mode_form"/>
+        <field name="arch" type="xml">
+            <field name="default_date_prefered" position="after">
+                <field name="default_batch_booking" />
+                <field name="default_debit_advice_control" />
+            </field>
+        </field>
+    </record>
+</odoo>
