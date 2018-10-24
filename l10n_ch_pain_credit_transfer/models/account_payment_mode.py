@@ -33,3 +33,4 @@ class AccountPaymentMode(models.Model):
              "line for all the wire transfers of the SEPA XML file ; if "
              "false, the bank statement will display one debit line per wire "
              "transfer of the SEPA XML file.")
+    
