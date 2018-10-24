@@ -1,9 +1,9 @@
 # Copyright (c) 2018 brain-tec AG (http://www.braintec-group.com)
 # License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl.html)
 
-from odoo import models, api, _, fields
-from odoo.exceptions import UserError
+from odoo import models, api, fields
 from lxml import etree
+
 
 class AccountPaymentOrder(models.Model):
     _inherit = 'account.payment.order'
@@ -14,29 +14,36 @@ class AccountPaymentOrder(models.Model):
          ('CND', 'Collective Advice No Details'),
          ('CWD', 'Collective Advice With Details'),
          ], string='Debit Advice Control', required=False,
-        help="Can be used to control the debit advice. The following options are available:\n"
+        help="Can be used to control the debit advice. "
+             "The following options are available:\n"
              "• NOA No Advice\n"
              "• SIA Single Advice\n"
              "• CND Collective Advice No Details\n"
              "• CWD Collective Advice With Details\n"
              "If used, then 'Code' must not be present")
-    payment_method_code = fields.Char(related='payment_mode_id.payment_method_id.code',
-                                      string='PM Code', readonly=True, store=False)
+    payment_method_code = fields.Char(
+        related='payment_mode_id.payment_method_id.code',
+        tring='PM Code', readonly=True, store=False)
 
     @api.model
     def create(self, vals):
         if vals.get('payment_mode_id'):
-            payment_mode = self.env['account.payment.mode'].browse(vals['payment_mode_id'])
-            if not vals.get('debit_advice_control') and payment_mode.default_debit_advice_control:
-                vals['debit_advice_control'] = payment_mode.default_debit_advice_control
-            if not vals.get('batch_booking') and payment_mode.default_batch_booking:
+            payment_mode = \
+                self.env['account.payment.mode'].browse(vals['payment_mode_id'])
+            if not vals.get('debit_advice_control') and \
+                    payment_mode.default_debit_advice_control:
+                vals['debit_advice_control'] = \
+                    payment_mode.default_debit_advice_control
+            if not vals.get('batch_booking') and \
+                    payment_mode.default_batch_booking:
                 vals['batch_booking'] = payment_mode.default_batch_booking
         return super(AccountPaymentOrder, self).create(vals)
 
     @api.onchange('payment_mode_id')
     def payment_mode_id_change(self):
         res = super(AccountPaymentOrder, self).payment_mode_id_change()
-        self.debit_advice_control = self.payment_mode_id.default_debit_advice_control or None
+        self.debit_advice_control = \
+            self.payment_mode_id.default_debit_advice_control or None
         self.batch_booking = self.payment_mode_id.default_batch_booking
         return res
 
@@ -58,5 +65,3 @@ class AccountPaymentOrder(models.Model):
                 party_tp, 'Prtry')
             party_proprietary.text = self.debit_advice_control
         return res
-
-
