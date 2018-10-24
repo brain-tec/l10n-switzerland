@@ -65,3 +65,4 @@ class AccountPaymentOrder(models.Model):
                 party_tp, 'Prtry')
             party_proprietary.text = self.debit_advice_control
         return res
+    
