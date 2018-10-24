@@ -29,7 +29,7 @@ class AccountPaymentOrder(models.Model):
     def create(self, vals):
         if vals.get('payment_mode_id'):
             payment_mode = \
-                self.env['account.payment.mode'].browse(
+                self.env['account.payment.mode'].browse(\
                 vals['payment_mode_id'])
             if not vals.get('debit_advice_control') and \
                     payment_mode.default_debit_advice_control:
