@@ -22,9 +22,3 @@ msgstr ""
 #: model:ir.model,name:l10n_ch_pain_credit_transfer.model_account_payment_method
 msgid "Payment Methods"
 msgstr "Moyens de Paiement"
-
-#. module: l10n_ch_pain_credit_transfer
-#: selection:account.payment.mode,default_debit_advice_control:0
-#: selection:account.payment.order,debit_advice_control:0
-msgid "Debit Advice Control"
-msgstr "Anzeigesteuerung"

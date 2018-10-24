@@ -5,7 +5,7 @@
         <field name="model">account.payment.mode</field>
         <field name="inherit_id" ref="account_payment_order.account_payment_mode_form"/>
         <field name="arch" type="xml">
-            <field name="default_date_prefered" position="after">
+            <field name="fixed_journal_id" position="after">
                 <field name="default_batch_booking" />
                 <field name="default_debit_advice_control" />
             </field>
