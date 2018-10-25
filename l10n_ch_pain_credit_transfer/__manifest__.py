@@ -14,5 +14,9 @@
         "l10n_ch_base_bank",
         "account_banking_sepa_credit_transfer",
     ],
+    "data": [
+        'views/account_payment_mode.xml',
+        'views/account_payment_order.xml',
+    ],
     'installable': True,
 }

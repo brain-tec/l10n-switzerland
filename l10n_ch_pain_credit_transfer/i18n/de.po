@@ -2,11 +2,15 @@
 # This file contains the translation of the following modules:
 #	* l10n_ch_pain_credit_transfer
 #
+# Translators:
+# BT-tpiric <timka.piric@braintec-group.com>, 2018
 msgid ""
 msgstr ""
 "Project-Id-Version: Odoo Server 11.0\n"
 "Report-Msgid-Bugs-To: \n"
-"Last-Translator: <>\n"
+"POT-Creation-Date: 2018-10-18 14:59+0000\n"
+"PO-Revision-Date: 2018-10-18 14:59+0000\n"
+"Last-Translator: BT-tpiric <timka.piric@braintec-group.com>, 2018\n"
 "Language-Team: \n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -21,40 +25,46 @@ msgid "Can be used to control the debit advice. The following options are availa
 "• CND Collective Advice No Details\n"
 "• CWD Collective Advice With Details\n"
 "If used, then 'Code' must not be present"
-msgstr ""
+msgstr "Kann zur Anzeigesteuerung verwendet werden. Folgende Ausprägungen stehen zur Verfügung:\n"
+"• NOA Keine Anzeige\n"
+"• SIA Einzelanzeige mit Details\n"
+"• CND Sammelanzeige ohne Details\n"
+"• CWD Sammelanzeige mit Details\n"
+"Wenn verwendet, darf 'Code' nicht vorkommen."
 
 #. module: l10n_ch_pain_credit_transfer
 #: selection:account.payment.mode,default_debit_advice_control:0
 #: selection:account.payment.order,debit_advice_control:0
 msgid "Collective Advice No Details"
-msgstr ""
+msgstr "Sammelanzeige ohne Details"
 
 #. module: l10n_ch_pain_credit_transfer
 #: selection:account.payment.mode,default_debit_advice_control:0
 #: selection:account.payment.order,debit_advice_control:0
 msgid "Collective Advice With Details"
-msgstr ""
+msgstr "Sammelanzeige mit Details"
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model.fields,field_description:l10n_ch_pain_credit_transfer.field_account_payment_order_debit_advice_control
 msgid "Debit Advice Control"
-msgstr ""
+msgstr "Anzeigesteuerung"
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model.fields,field_description:l10n_ch_pain_credit_transfer.field_account_payment_mode_default_batch_booking
 msgid "Default Batch Booking"
-msgstr ""
+msgstr "Standardwert für Sammelverarbeitung"
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model.fields,help:l10n_ch_pain_credit_transfer.field_account_payment_mode_default_batch_booking
 msgid "Default Batch Booking for Payment Orders\n"
 "If true, the bank statement will display only one debit line for all the wire transfers of the SEPA XML file ; if false, the bank statement will display one debit line per wire transfer of the SEPA XML file."
-msgstr ""
+msgstr "Standardwert für Sammelverarbeitung bei den Zahlungsanweisungen\n"
+"Wenn dies der Fall ist, zeigt der Kontoauszug für alle Überweisungen der SEPA-XML-Datei nur eine Belastungszeile an. falls falsch, zeigt der Kontoauszug pro Überweisung der SEPA-XML-Datei eine Soll-Zeile an."
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model.fields,field_description:l10n_ch_pain_credit_transfer.field_account_payment_mode_default_debit_advice_control
 msgid "Default Debit Advice Control"
-msgstr ""
+msgstr "Standardwert für die Anzeigesteuerung bei den Zahlungsanweisungen"
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model.fields,help:l10n_ch_pain_credit_transfer.field_account_payment_mode_default_debit_advice_control
@@ -65,31 +75,37 @@ msgid "Default Debit Advice Control for Payment Orders\n"
 "• CND Collective Advice No Details\n"
 "• CWD Collective Advice With Details\n"
 "If used, then 'Code' must not be present"
-msgstr ""
+msgstr "Standardwert für die Anzeigesteuerung bei den Zahlungsanweisungen\n"
+"Kann zur Anzeigesteuerung verwendet werden. Folgende Ausprägungen stehen zur Verfügung:\n"
+"• NOA Keine Anzeige\n"
+"• SIA Einzelanzeige mit Details\n"
+"• CND Sammelanzeige ohne Details\n"
+"• CWD Sammelanzeige mit Details\n"
+"Wenn verwendet, darf 'Code' nicht vorkommen."
 
 #. module: l10n_ch_pain_credit_transfer
 #: selection:account.payment.mode,default_debit_advice_control:0
 #: selection:account.payment.order,debit_advice_control:0
 msgid "No Advice"
-msgstr ""
+msgstr "No Advice"
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model,name:l10n_ch_pain_credit_transfer.model_account_payment_method
 msgid "Payment Methods"
-msgstr ""
+msgstr "Zahlungsmethoden"
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model,name:l10n_ch_pain_credit_transfer.model_account_payment_mode
 msgid "Payment Modes"
-msgstr ""
+msgstr "Zahlungsmodi"
 
 #. module: l10n_ch_pain_credit_transfer
 #: model:ir.model,name:l10n_ch_pain_credit_transfer.model_account_payment_order
 msgid "Payment Order"
-msgstr ""
+msgstr "Zahlungsvorschlag"
 
 #. module: l10n_ch_pain_credit_transfer
 #: selection:account.payment.mode,default_debit_advice_control:0
 #: selection:account.payment.order,debit_advice_control:0
 msgid "Single Advice"
-msgstr ""
+msgstr "Einzelanzeige mit Details"

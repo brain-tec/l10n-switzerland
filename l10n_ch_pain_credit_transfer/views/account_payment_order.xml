@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  © 2018 brain-tec AG (http://www.braintec-group.com)
+  License AGPL-3.0 or later (http://www.gnu.org/licenses/agpl).
+-->
+<odoo>
+    <record id="account_payment_order_form" model="ir.ui.view">
+        <field name="name">l10n_ch_base_credit_transfer.account.payment.order.form</field>
+        <field name="model">account.payment.order</field>
+        <field name="inherit_id" ref="account_banking_pain_base.account_payment_order_form"/>
+        <field name="arch" type="xml">
+            <field name="batch_booking" position="after">
+                <field name="payment_method_code" invisible="True"/>
+                <field name="debit_advice_control"
+                       attrs="{'invisible': [('payment_method_code', '!=', 'sepa_credit_transfer')],
+                       'required': [('payment_method_code', '=', 'sepa_credit_transfer')]}"/>
+            </field>
+        </field>
+    </record>
+</odoo>
