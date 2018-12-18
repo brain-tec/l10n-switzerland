@@ -113,7 +113,7 @@ class AccountInvoice(models.Model):
         """
         pay_slip = self.env['l10n_ch.payment_slip']
         for inv in self:
-            if inv.type in ('in_invoice', 'in_refund'):
+            if inv.type in ('in_invoice', 'out_refund'):
                 if inv.reference_type == 'isr' and inv._check_isr():
                     ref = inv.reference
                 else:
