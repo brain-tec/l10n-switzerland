@@ -301,8 +301,7 @@ class ResPartnerBank(models.Model, BankCommon):
             if not bank.is_swiss_post():
                 self.acc_number = self._get_acc_name()
         elif self.acc_type == 'iban':
-            if not bank:
-                bank = self._get_ch_bank_from_iban()
+            bank = self._get_ch_bank_from_iban()
             if bank:
                 if bank.is_swiss_post():
                     ccp = self._convert_iban_to_ccp(self.acc_number.strip())
