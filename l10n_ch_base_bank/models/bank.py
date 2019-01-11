@@ -287,7 +287,7 @@ class ResPartnerBank(models.Model, BankCommon):
         - a bank account with CCP on the bank, we use ccp of the bank
         - otherwise there is no CCP to use
         """
-        bank = self.bank_id
+        bank = self._get_ch_bank_from_iban()
         ccp = False
         if self.acc_type == 'postal':
             ccp = self.acc_number
@@ -301,7 +301,6 @@ class ResPartnerBank(models.Model, BankCommon):
             if not bank.is_swiss_post():
                 self.acc_number = self._get_acc_name()
         elif self.acc_type == 'iban':
-            bank = self._get_ch_bank_from_iban()
             if bank:
                 if bank.is_swiss_post():
                     ccp = self._convert_iban_to_ccp(self.acc_number.strip())
@@ -310,8 +309,7 @@ class ResPartnerBank(models.Model, BankCommon):
         elif self.bank_id.ccp:
             ccp = self.bank_id.ccp
         self.bank_id = bank
-        if not self.ccp:
-            self.ccp = ccp
+        self.ccp = ccp
 
     @api.onchange('ccp')
     def onchange_ccp_set_empty_acc_number(self):
