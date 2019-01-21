@@ -68,13 +68,6 @@ class AccountPaymentOrder(models.Model):
             if bank_line.local_instrument == 'CH01':
                 # Don't set the creditor agent on ISR/CH01 payments
                 return True
-            elif not partner_bank.bank_bic:
-                raise UserError(_(
-                    "For pain.001.001.03.ch.02, for non-ISR payments, "
-                    "the BIC is required on the bank '%s' related to the "
-                    "bank account '%s'") % (
-                        partner_bank.bank_id.name,
-                        partner_bank.acc_number))
         return super().generate_party_agent(
             parent_node, party_type, order, partner_bank, gen_args,
             bank_line=bank_line,
