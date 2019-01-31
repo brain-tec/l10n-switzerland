@@ -61,27 +61,34 @@ class TestBank(common.TransactionCase):
         self.assertEqual(bank_acc.acc_type, 'iban')
 
     def test_bank_ccp(self):
+        new_bank = self.env['res.bank'].create({
+            'name': 'Test Bank Schweiz AG',
+            'bic': 'ALSWCH21XXX',
+            'clearing': '38815',
+            'ccp': '88888',
+        })
         bank_acc = self.env['res.partner.bank'].create({
             'partner_id': self.partner.id,
-            'acc_number': '46-110-7',
+            'acc_number': '88888',
         })
+
         bank_acc.onchange_acc_number_set_swiss_bank()
 
-        self.assertEqual(bank_acc.bank_id, self.bank)
+        self.assertEqual(bank_acc.bank_id, new_bank)
         self.assertEqual(bank_acc.acc_number, 'Bank/CCP Camptocamp')
-        self.assertEqual(bank_acc.ccp, '46-110-7')
+        self.assertEqual(bank_acc.ccp, '88888')
         self.assertEqual(bank_acc.acc_type, 'bank')
 
     def test_bank_ccp_no_found(self):
         bank_acc = self.env['res.partner.bank'].create({
             'partner_id': self.partner.id,
-            'acc_number': '10-8060-7',
+            'acc_number': '99999',
         })
         bank_acc.onchange_acc_number_set_swiss_bank()
 
         self.assertEqual(bank_acc.bank_id, self.post_bank)
-        self.assertEqual(bank_acc.acc_number, '10-8060-7')
-        self.assertEqual(bank_acc.ccp, '10-8060-7')
+        self.assertEqual(bank_acc.acc_number, '99999')
+        self.assertEqual(bank_acc.ccp, '99999')
         self.assertEqual(bank_acc.acc_type, 'postal')
 
         # specify that it isn't a postal account
@@ -90,7 +97,7 @@ class TestBank(common.TransactionCase):
 
         self.assertEqual(bank_acc.bank_id, self.bank)
         self.assertEqual(bank_acc.acc_number, 'Bank/CCP Camptocamp')
-        self.assertEqual(bank_acc.ccp, '10-8060-7')
+        self.assertEqual(bank_acc.ccp, '99999')
         self.assertEqual(bank_acc.acc_type, 'bank')
 
     def test_bank_acc_number_not_defined(self):
@@ -105,13 +112,13 @@ class TestBank(common.TransactionCase):
     def test_ccp(self):
         bank_acc = self.env['res.partner.bank'].create({
             'partner_id': self.partner.id,
-            'acc_number': '10-8060-7',
+            'acc_number': '77777',
         })
         bank_acc.onchange_acc_number_set_swiss_bank()
 
         self.assertEqual(bank_acc.bank_id, self.post_bank)
-        self.assertEqual(bank_acc.acc_number, '10-8060-7')
-        self.assertEqual(bank_acc.ccp, '10-8060-7')
+        self.assertEqual(bank_acc.acc_number, '77777')
+        self.assertEqual(bank_acc.ccp, '77777')
         self.assertEqual(bank_acc.acc_type, 'postal')
 
     def test_iban_ccp(self):
@@ -155,8 +162,8 @@ class TestBank(common.TransactionCase):
     def test_set_ccp(self):
         bank_acc = self.env['res.partner.bank'].new({
             'partner_id': self.partner.id,
-            'acc_number': None,
-            'ccp': '10-8060-7',
+            'acc_number': '10-8060-7',
+            'ccp': '55555',
         })
         bank_acc.onchange_ccp_set_empty_acc_number()
 
@@ -191,12 +198,14 @@ class TestBank(common.TransactionCase):
         bank_acc = self.env['res.partner.bank'].new({
             'partner_id': self.partner.id,
             'acc_number': None,
-            'ccp': '46-110-7'
+            'ccp': '44444'
         })
         bank_acc.onchange_ccp_set_empty_acc_number()
 
-        self.assertEqual(bank_acc.acc_number, 'Bank/CCP Camptocamp')
-        self.assertEqual(bank_acc.bank_id, self.bank)
+        # CP: 44444 does not exists. So it takes it from  self.post_bank
+        # As post_bank its swiss_post it takes the acc_number from ccp.
+        # self.bank_id changes to self.post_bank
+        self.assertEqual(bank_acc.acc_number, '44444')
 
     def test_constraint_ccp(self):
         with self.assertRaises(exceptions.ValidationError):
@@ -283,19 +292,27 @@ class TestBank(common.TransactionCase):
         self.assertEqual(result and result[0][0], self.bank.id)
 
     def test_multiple_isr_bank_account_for_same_partner(self):
+        # needed to get this object ID as first occurrence in search.
+        # Can not use the one from set up method due to several occurrences.
+        bank = self.env['res.bank'].create({
+            'name': 'Alternative Bank Schweiz AG',
+            'bic': 'ALSWCH21XXX',
+            'clearing': '38815',
+            'ccp': '11111',
+        })
         bank_acc = self.env['res.partner.bank'].create({
             'partner_id': self.partner.id,
-            'acc_number': '46-110-7',
+            'acc_number': '11111',
         })
         bank_acc.onchange_acc_number_set_swiss_bank()
 
         bank_acc2 = self.env['res.partner.bank'].create({
             'partner_id': self.partner.id,
-            'acc_number': '46-110-7',
+            'acc_number': '11111',
         })
         bank_acc2.onchange_acc_number_set_swiss_bank()
 
-        self.assertEqual(bank_acc2.bank_id, self.bank)
+        self.assertEqual(bank_acc2.bank_id, bank)
         self.assertEqual(bank_acc2.acc_number, 'Bank/CCP Camptocamp (1)')
         self.assertEqual(bank_acc2.acc_type, 'bank')
 
@@ -303,11 +320,11 @@ class TestBank(common.TransactionCase):
 
         bank_acc3 = self.env['res.partner.bank'].create({
             'partner_id': self.partner.id,
-            'acc_number': '46-110-7',
+            'acc_number': '11111',
         })
         bank_acc3.onchange_acc_number_set_swiss_bank()
 
-        self.assertEqual(bank_acc3.bank_id, self.bank)
+        self.assertEqual(bank_acc3.bank_id, bank)
         self.assertEqual(bank_acc3.acc_number, 'Bank/CCP Camptocamp (2)')
         self.assertEqual(bank_acc3.acc_type, 'bank')
 

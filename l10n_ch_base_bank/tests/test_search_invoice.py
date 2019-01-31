@@ -20,10 +20,11 @@ class TestSearchInvoice(common.TransactionCase):
             'bank_id': bank.id,
             'acc_number': 'Bank/CCP 01-1234-1',
         })
-        self.company.partner_id.bank_ids = bank_account
         self.partner = self.env['res.partner'].create(
             {'name': 'Test'}
         )
+        self.company.partner_id = self.partner
+        self.company.partner_id.bank_ids = bank_account
 
     def assert_find_ref(self, reference, operator, value):
         values = {
