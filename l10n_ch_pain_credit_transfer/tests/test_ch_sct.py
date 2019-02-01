@@ -72,7 +72,6 @@ class TestSCT_CH(AccountingTestCase):
             'pain.001.001.03.ch.02'
         self.chf_currency = self.env.ref('base.CHF')
         self.eur_currency = self.env.ref('base.EUR')
-        self.main_company.currency_id = self.chf_currency.id
         ch_bank2 = self.env['res.bank'].create({
             'name': 'Banque Cantonale Vaudoise',
             'bic': 'BCVLCH2LXXX',
