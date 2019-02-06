@@ -18,9 +18,10 @@
                 <group attrs="{'invisible': [('state','!=', 'need_extra_info')]}" col="2" colspan="2">
                     <newline/>
                     <separator colspan="2" string="Partner"/>
-                    <field attrs="{'required': [('state','=', 'need_extra_info')]}" colspan="2" name="partner_id"/>
+                    <field attrs="{'required': [('state','=', 'need_extra_info')]}" colspan="2" name="partner_id" context="{'default_supplier': True}" />
                     <separator colspan="2" string="Partner Bank Account"/>
-                    <field attrs="{'required': [('state','=', 'need_extra_info')]}" colspan="2" domain="[('partner_id','parent_of', partner_id)]" name="bank_account_id"/>
+                    <field attrs="{'required': [('state','=', 'need_extra_info')]}" colspan="2" domain="[('partner_id','parent_of', partner_id)]" name="bank_account_id"
+                           context="{'default_partner_id': partner_id}"/>
                 </group>
                 <footer>
                     <button class="btn-primary" icon="fa-arrow-right" name="validate_bvr_string" string="Create" type="object"/>
