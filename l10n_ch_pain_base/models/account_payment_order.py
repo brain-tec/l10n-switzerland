@@ -85,14 +85,14 @@ class AccountPaymentOrder(models.Model):
             if bank_line.local_instrument == 'CH01':
                 # Don't set the creditor agent on ISR/CH01 payments
                 return True
-        if party_type == 'Dbtr' and partner_bank.bank_bic:
-            party_agent = etree.SubElement(parent_node, '%sAgt' % party_type)
-            party_agent_institution = etree.SubElement(
-                party_agent, 'FinInstnId')
-            party_agent_bic = etree.SubElement(
-                party_agent_institution, gen_args.get('bic_xml_tag'))
-            party_agent_bic.text = partner_bank.bank_bic
-            return True
+        # if party_type == 'Dbtr' and partner_bank.bank_bic:
+        #     party_agent = etree.SubElement(parent_node, '%sAgt' % party_type)
+        #     party_agent_institution = etree.SubElement(
+        #         party_agent, 'FinInstnId')
+        #     party_agent_bic = etree.SubElement(
+        #         party_agent_institution, gen_args.get('bic_xml_tag'))
+        #     party_agent_bic.text = partner_bank.bank_bic
+        #     return True
         return super().generate_party_agent(
             parent_node, party_type, order, partner_bank, gen_args,
             bank_line=bank_line,
