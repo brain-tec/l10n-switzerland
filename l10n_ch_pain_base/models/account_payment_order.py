@@ -66,15 +66,16 @@ class AccountPaymentOrder(models.Model):
         if (
                 gen_args.get('pain_flavor') == 'pain.001.001.03.ch.02' and
                 bank_line):
-            if ( # for the own bank account we set the BIC 
+            if (  # for the own bank account we set the BIC
                 (party_type == 'Dbtr' and partner_bank.bank_bic) or
-                # In case we have a foreign account and it is not EUR (not SEPA)
-                # we also have to set the BIC
-                (party_type= == 'Cdtr' and partner_bank.bank_bic and 
+                # In case we have a foreign account and it is not EUR
+                # (not SEPA) we also have to set the BIC
+                (party_type == 'Cdtr' and partner_bank.bank_bic and
                  not bank_line.partner_bank_id.acc_number[0:2] == 'CH' and
                  not bank_line.currency_id.name == 'EUR')
                ):
-                party_agent = etree.SubElement(parent_node, '%sAgt' % party_type)
+                party_agent = etree.SubElement(parent_node,
+                                               '%sAgt' % party_type)
                 party_agent_institution = etree.SubElement(
                         party_agent, 'FinInstnId')
                 party_agent_bic = etree.SubElement(
