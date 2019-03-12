@@ -63,17 +63,19 @@ class AccountPaymentOrder(models.Model):
     def generate_party_agent(
             self, parent_node, party_type, order, partner_bank, gen_args,
             bank_line=None):
-        if (
-                gen_args.get('pain_flavor') == 'pain.001.001.03.ch.02' and
-                bank_line):
-            if (  # for the own bank account we set the BIC
+        if gen_args.get('pain_flavor') == 'pain.001.001.03.ch.02':
+            if (
+                # for the own bank account we set the BIC
                 (party_type == 'Dbtr' and partner_bank.bank_bic) or
-                # In case we have a foreign account and it is not EUR
-                # (not SEPA) we also have to set the BIC
-                (party_type == 'Cdtr' and partner_bank.bank_bic and
-                 not bank_line.partner_bank_id.acc_number[0:2] == 'CH' and
-                 not bank_line.currency_id.name == 'EUR')
-               ):
+                    # In case we have a foreign account and it is not EUR
+                    # (not SEPA) we also have to set the BIC
+                    (party_type == 'Cdtr' and partner_bank.bank_bic and
+                        # We don't have a bank_line when generating a
+                        # 'B' block
+                        (not bank_line or
+                         (not bank_line.partner_bank_id.acc_number[0:2] == 'CH'
+                          and not bank_line.currency_id.name == 'EUR')))
+            ):
                 party_agent = etree.SubElement(parent_node,
                                                '%sAgt' % party_type)
                 party_agent_institution = etree.SubElement(
@@ -82,9 +84,13 @@ class AccountPaymentOrder(models.Model):
                         party_agent_institution, gen_args.get('bic_xml_tag'))
                 party_agent_bic.text = partner_bank.bank_bic
                 return True
-            if bank_line.local_instrument == 'CH01':
+            if bank_line and bank_line.local_instrument == 'CH01':
                 # Don't set the creditor agent on ISR/CH01 payments
                 return True
+        ##########################################
+        # We comment out this piece of code because condition is now
+        # considered in the 'if' above
+        ##########################################
         # if party_type == 'Dbtr' and partner_bank.bank_bic:
         #     party_agent = etree.SubElement(parent_node, '%sAgt' % party_type)
         #     party_agent_institution = etree.SubElement(
