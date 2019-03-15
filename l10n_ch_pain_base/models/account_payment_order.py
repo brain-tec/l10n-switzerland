@@ -6,7 +6,6 @@ from odoo.exceptions import UserError
 from lxml import etree
 
 
-
 class AccountPaymentOrder(models.Model):
     _inherit = 'account.payment.order'
 
@@ -26,7 +25,7 @@ class AccountPaymentOrder(models.Model):
         nsmap = super().generate_pain_nsmap()
         pain_flavor = self.payment_mode_id.payment_method_id.pain_version
         if pain_flavor in ['pain.001.001.03.ch.02', 'pain.008.001.02.ch.01']:
-            nsmap[None] = 'http://www.six-interbank-clearing.com/de/'\
+            nsmap[None] = 'http://www.six-interbank-clearing.com/de/' \
                           '%s.xsd' % pain_flavor
 
         return nsmap
@@ -38,9 +37,9 @@ class AccountPaymentOrder(models.Model):
         if pain_flavor in ['pain.001.001.03.ch.02', 'pain.008.001.02.ch.01']:
             attrib = {
                 "{http://www.w3.org/2001/XMLSchema-instance}schemaLocation":
-                "http://www.six-interbank-clearing.com/de/"
-                "%s.xsd  %s.xsd" % (pain_flavor, pain_flavor)
-                }
+                    "http://www.six-interbank-clearing.com/de/"
+                    "%s.xsd  %s.xsd" % (pain_flavor, pain_flavor)
+            }
             return attrib
         else:
             return super().generate_pain_attrib()
@@ -64,28 +63,38 @@ class AccountPaymentOrder(models.Model):
             self, parent_node, party_type, order, partner_bank, gen_args,
             bank_line=None):
         if gen_args.get('pain_flavor') == 'pain.001.001.03.ch.02':
+
+            if bank_line and bank_line.local_instrument == 'CH01':
+                # Don't set the creditor agent on ISR/CH01 payments
+                return True
+
             if (
                 # for the own bank account we set the BIC
-                (party_type == 'Dbtr' and partner_bank.bank_bic) or
+                (party_type == 'Dbtr' and partner_bank.bank_bic) or (
+
                     # In case we have a foreign account and it is not EUR
                     # (not SEPA) we also have to set the BIC
-                    (party_type == 'Cdtr' and partner_bank.bank_bic and
+                    party_type == 'Cdtr' and partner_bank.bank_bic and (
+
                         # We don't have a bank_line when generating a
                         # 'B' block
-                        (not bank_line or
-                         (not bank_line.partner_bank_id.acc_number[0:2] == 'CH'
-                          and not bank_line.currency_id.name == 'EUR')))
+                        not bank_line or (
+                            # Don't set the creditor agent on ISR/CH01 payments
+                            not bank_line.local_instrument == 'CH01' and
+                            not bank_line.partner_bank_id.acc_number[
+                                0:2] == 'CH' and
+                            not bank_line.currency_id.name == 'EUR'
+                        )
+                    )
+                )
             ):
                 party_agent = etree.SubElement(parent_node,
                                                '%sAgt' % party_type)
                 party_agent_institution = etree.SubElement(
-                        party_agent, 'FinInstnId')
+                    party_agent, 'FinInstnId')
                 party_agent_bic = etree.SubElement(
-                        party_agent_institution, gen_args.get('bic_xml_tag'))
+                    party_agent_institution, gen_args.get('bic_xml_tag'))
                 party_agent_bic.text = partner_bank.bank_bic
-                return True
-            if bank_line and bank_line.local_instrument == 'CH01':
-                # Don't set the creditor agent on ISR/CH01 payments
                 return True
         ##########################################
         # We comment out this piece of code because condition is now
