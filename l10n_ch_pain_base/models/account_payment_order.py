@@ -10,16 +10,6 @@ class AccountPaymentOrder(models.Model):
     _inherit = 'account.payment.order'
 
     @api.multi
-    def compute_sepa_final_hook(self, sepa):
-        self.ensure_one()
-        sepa = super().compute_sepa_final_hook(sepa)
-        pain_flavor = self.payment_mode_id.payment_method_id.pain_version
-        # ISR orders cannot be SEPA orders
-        if pain_flavor and '.ch.' in pain_flavor:
-            sepa = False
-        return sepa
-
-    @api.multi
     def generate_pain_nsmap(self):
         self.ensure_one()
         nsmap = super().generate_pain_nsmap()
@@ -27,7 +17,6 @@ class AccountPaymentOrder(models.Model):
         if pain_flavor in ['pain.001.001.03.ch.02', 'pain.008.001.02.ch.01']:
             nsmap[None] = 'http://www.six-interbank-clearing.com/de/' \
                           '%s.xsd' % pain_flavor
-
         return nsmap
 
     @api.multi
@@ -48,14 +37,14 @@ class AccountPaymentOrder(models.Model):
     def generate_start_payment_info_block(
             self, parent_node, payment_info_ident,
             priority, local_instrument, category_purpose, sequence_type,
-            requested_date, eval_ctx, gen_args):
+            requested_date, eval_ctx, gen_args, svc_lvl=None):
         if gen_args.get('pain_flavor') == 'pain.001.001.03.ch.02':
             gen_args['local_instrument_type'] = 'proprietary'
             gen_args['structured_remittance_issuer'] = False
         return super().generate_start_payment_info_block(
             parent_node, payment_info_ident, priority, local_instrument,
             category_purpose, sequence_type, requested_date, eval_ctx,
-            gen_args,
+            gen_args, svc_lvl,
         )
 
     @api.model
