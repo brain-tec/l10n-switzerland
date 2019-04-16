@@ -100,14 +100,9 @@ today = thetime.strftime("%Y-%m-%d")
         <% sepa_context['line'] = line %>\
         <CdtTrfTxInf>
           <PmtId>
-<<<<<<< HEAD
               <!-- ZKB mandatory field -->
               <InstrId>${line.name}</InstrId>
               <EndToEndId>${line.name}</EndToEndId>
-=======
-            <InstrId>${line.name}</InstrId>
-            <EndToEndId>${line.name}</EndToEndId>
->>>>>>> 8590142d8bc41a061a00a65f629c5f24e78e90e9
           </PmtId>
           <%block name="PmtTpInf"/>
           <Amt>
