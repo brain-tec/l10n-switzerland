@@ -128,8 +128,21 @@
             </CdtrAgt>
           </%block>
           <Cdtr>
-            <Nm>${line.partner_id.name | filter_text,remove_special_chars,truncate_70}</Nm>\
-            ${self.address(line.partner_id) | filter_text}\
+            <Nm>${line.bank_id.partner_id and line.bank_id.partner_id.name or line.partner_id.name| filter_text,remove_special_chars,truncate_70}</Nm>\
+              <PstlAdr>
+                %if line.bank_id.street:
+                  <StrtNm>${line.bank_id.street | filter_text}</StrtNm>
+                %endif
+                %if line.bank_id.zip:
+                  <PstCd>${line.bank_id.zip | filter_text}</PstCd>
+                %endif
+                %if line.bank_id.city:
+                  <TwnNm>${line.bank_id.city | filter_text}</TwnNm>
+                %endif
+                %if line.bank_id.country_id:
+                <Ctry>${line.bank_id.country_id.code}</Ctry>
+                %endif
+              </PstlAdr>
           </Cdtr>
           <CdtrAcct>\
             ${self.acc_id(line.bank_id)}\
