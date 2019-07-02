@@ -128,7 +128,7 @@
             </CdtrAgt>
           </%block>
           <Cdtr>
-              <Nm>${line.partner_id.name | filter_text,remove_special_chars,truncate_70}</Nm>\
+            <Nm>${line.bank_id.owner_name or line.partner_id.name| filter_text,remove_special_chars,truncate_70}</Nm>
               <PstlAdr>
                 %if line.bank_id.street:
                   <StrtNm>${line.bank_id.street | filter_text}</StrtNm>
