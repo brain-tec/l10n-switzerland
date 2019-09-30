@@ -40,13 +40,6 @@ Adds the support of postal account and bank postal account norm.
 The partner bank form allows you to input Swiss bank account and postal account in a correct manner.
 
 
-l10n_ch_dta
------------
-
-Provides support of DTA payment file protocol to generate electronic payment file.
-This feature will be deprecated around the end of 2016.
-
-
 l10n_ch_pain_credit_transfert
 -----------------------------
 
@@ -72,7 +65,7 @@ l10n_ch_import_cresus
 
 This module add the ability to import CSV file from Crésus software (www.cresus.ch)
 
-l10n_cd_import_winbiz
+l10n_ch_import_winbiz
 ---------------------
 
 Allows to import accounting from WinBIZ software (www.winbiz.ch) using Excel or XML format.
