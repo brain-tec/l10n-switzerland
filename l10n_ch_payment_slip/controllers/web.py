@@ -10,7 +10,8 @@ from odoo.http import content_disposition, request, route
 class ReportController(report.ReportController):
     @route()
     def report_routes(self, reportname, docids=None, converter=None, **data):
-        if converter == "reportlab-pdf":
+        if converter == "reportlab-pdf" and \
+                reportname == "l10n_ch_payment_slip.one_slip_per_page_from_invoice":
             report_slip = request.env.ref(
                 'l10n_ch_payment_slip.one_slip_per_page_from_invoice')
             filename = ''
