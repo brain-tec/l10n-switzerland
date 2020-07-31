@@ -64,8 +64,6 @@ class AccountInvoice(models.Model):
             partner_bank = self.env['res.partner.bank'].browse(partner_bank_id)
             if partner_bank.state == 'bvr':
                 result['value']['reference_type'] = 'bvr'
-            else:
-                result['value']['reference_type'] = 'none'
         return result
 
     @api.constrains('reference_type')
