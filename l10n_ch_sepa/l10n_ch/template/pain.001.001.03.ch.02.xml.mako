@@ -79,7 +79,7 @@
           <RmtInf>
             <Strd>
               <CdtrRefInf>
-                <Ref>${invoice.reference}</Ref>
+                <Ref>${line.communication or invoice.reference}</Ref>
               </CdtrRefInf>
             </Strd>
           </RmtInf>
