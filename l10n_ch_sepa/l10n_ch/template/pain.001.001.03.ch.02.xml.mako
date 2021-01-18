@@ -16,13 +16,14 @@
 
 <%block name="CdtrAgt">
 <%doc>\
-        For type 1, Creditor Agent shouldn't be delivered
+        For type 1, and 2.1 Creditor Agent shouldn't be delivered
 </%doc>\
    <%
-   line=sepa_context['line']
-   invoice = line.move_line_id.invoice
+   line = sepa_context['line']
+   invoice = line.move_line_id and line.move_line_id.invoice or False
+   bank = invoice and (invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
    %>
-   % if not invoice.partner_bank_id.state == 'bvr':
+   % if bank and not (bank.state == 'bvr' or bank.state == 'bv'):
     ${parent.CdtrAgt()}
    % endif
 </%block>
@@ -44,27 +45,20 @@
 
 </%doc>\
    <%
-   line=sepa_context['line']
-   invoice = line.move_line_id.invoice
-   bank = invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0])
+   line = sepa_context['line']
+   invoice = line.move_line_id and line.move_line_id.invoice or False
+   bank = invoice and (invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
    %>
-   % if bank.state == 'bvr':
+   % if bank and bank.state == 'bvr':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH01</Prtry>
               </LclInstrm>
           </PmtTpInf>
-   % elif bank.state == 'bv':
+   % elif bank and bank.state == 'bv':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH02</Prtry>
-              </LclInstrm>
-          </PmtTpInf>
-   % elif bank.state in ('iban', 'bank'):
-          <PmtTpInf>
-              <LclInstrm>
-                <Prtry>CH03</Prtry>
-                  <% bank.state %>
               </LclInstrm>
           </PmtTpInf>
    % endif
@@ -72,10 +66,10 @@
 
 <%block name="RmtInf">
    <%
-   line=sepa_context['line']
-   invoice = line.move_line_id.invoice
+   line = sepa_context['line']
+   invoice = line.move_line_id and line.move_line_id.invoice or False
    %>
-   % if invoice.reference_type == 'bvr':
+   % if invoice and invoice.reference_type == 'bvr':
           <RmtInf>
             <Strd>
               <CdtrRefInf>
