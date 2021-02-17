@@ -1,30 +1,30 @@
 # Translation of OpenERP Server.
 # This file contains the translation of the following modules:
-# 	* l10n_ch_payment_slip
-#
+# * l10n_ch_payment_slip
+# 
+# Translators:
 msgid ""
 msgstr ""
-"Project-Id-Version: OpenERP Server 7.0\n"
+"Project-Id-Version: l10n-switzerland (7.0)\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2014-01-15 15:01+0000\n"
-"PO-Revision-Date: 2014-01-15 15:37+0000\n"
-"Last-Translator: Yannick Vaucher @ Camptocamp <Unknown>\n"
-"Language-Team: \n"
+"POT-Creation-Date: 2016-12-24 03:05+0000\n"
+"PO-Revision-Date: 2016-12-27 15:44+0000\n"
+"Last-Translator: OCA Transbot <transbot@odoo-community.org>\n"
+"Language-Team: French (http://www.transifex.com/oca/OCA-l10n-switzerland-7-0/language/fr/)\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
-"Content-Transfer-Encoding: 8bit\n"
-"X-Launchpad-Export-Date: 2014-06-14 05:59+0000\n"
-"X-Generator: Launchpad (build 17045)\n"
-"Language: \n"
+"Content-Transfer-Encoding: \n"
+"Language: fr\n"
+"Plural-Forms: nplurals=2; plural=(n > 1);\n"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:111
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:120
 #, python-format
 msgid "Recursive mod10 is invalid for reference: %s"
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:100
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:104
 #, python-format
 msgid "Number record different from the computed!"
 msgstr ""
@@ -45,7 +45,7 @@ msgid "Tax Code"
 msgstr "Code de taxe"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.actions.report.xml,name:l10n_ch_payment_slip.report_bvr_html
+#: model:ir.actions.report.xml,name:l10n_ch_payment_slip.report_bvr_html_multi
 msgid "BVR/ESR"
 msgstr "BVR/ESR"
 
@@ -55,14 +55,12 @@ msgid "Horiz. position in mm for address"
 msgstr "Position horiz. en mm pour l'adresse"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_background
 #: field:res.company,bvr_background:0
 msgid "Insert BVR background ?"
 msgstr "Insérer l'arrière-plan BVR ?"
 
 #. module: l10n_ch_payment_slip
 #: field:bvr.import.wizard,file:0
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_bvr_import_wizard_file
 msgid "BVR File"
 msgstr "Fichier BVR"
 
@@ -72,20 +70,17 @@ msgid "Import"
 msgstr "Import"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_add_vert
 #: field:res.company,bvr_add_vert:0
 msgid "BVR vert. position for address (mm)"
 msgstr "BVR position vert. pour l'adresse (mm)"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_partner_bank_print_bank
 #: field:res.partner.bank,print_bank:0
 msgid "Print Bank on BVR"
 msgstr "Imprimer la banque sur le BVR"
 
 #. module: l10n_ch_payment_slip
 #: field:account.move.line,transaction_ref:0
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_account_move_line_transaction_ref
 msgid "Transaction Ref."
 msgstr ""
 
@@ -96,19 +91,17 @@ msgid "BVR Import"
 msgstr "Import BVR"
 
 #. module: l10n_ch_payment_slip
-#: report:addons/l10n_ch_payment_slip/report/bvr.mako:198
-#: report:addons/l10n_ch_payment_slip/report/multi_bvr.mako:199
+#: report:addons/l10n_ch_payment_slip/report/multi_bvr.mako:200
 msgid "Payment slip for:"
-msgstr ""
+msgstr "Bulletin de versement pour :"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/report/report_webkit_html.py:117
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:157
 #, python-format
 msgid "Your invoice should be validated to generate a BVR reference."
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_scan_line_horz
 #: field:res.company,bvr_scan_line_horz:0
 msgid "BVR horiz. position for scan line(mm)"
 msgstr "BVR position horiz. pour la ligne de codage(mm)"
@@ -116,10 +109,9 @@ msgstr "BVR position horiz. pour la ligne de codage(mm)"
 #. module: l10n_ch_payment_slip
 #: model:ir.model,name:l10n_ch_payment_slip.model_account_move_line
 msgid "Journal Items"
-msgstr ""
+msgstr "Écritures du journal"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_partner_bank_print_account
 #: field:res.partner.bank,print_account:0
 msgid "Print Account Number on BVR"
 msgstr "Imprimer le numéro de compte sur le BVR"
@@ -129,40 +121,29 @@ msgstr "Imprimer le numéro de compte sur le BVR"
 msgid ""
 "horiz. delta in mm 1.2 will print the bvr 1.2mm lefter, negative value is "
 "possible"
-msgstr ""
-"Delta horiz. en mm 1.2 imprimera le BVR 1.2mm plus à gauche, des valeurs "
-"négatives sont possibles"
+msgstr "Delta horiz. en mm 1.2 imprimera le BVR 1.2mm plus à gauche, des valeurs négatives sont possibles"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.actions.report.xml,name:l10n_ch_payment_slip.report_bvr_html_multi
-msgid "BVR/ESR multiple"
-msgstr ""
-
-#. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_scan_line_letter_spacing
 #: field:res.company,bvr_scan_line_letter_spacing:0
 msgid "BVR scan line letter spacing"
 msgstr "Espacement des charactères de la BVR ligne de codage"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:36
-#: code:addons/l10n_ch_payment_slip/report/report_webkit_html.py:116
-#: code:addons/l10n_ch_payment_slip/report/report_webkit_html.py:119
-#: code:addons/l10n_ch_payment_slip/report/report_webkit_html.py:123
-#: code:addons/l10n_ch_payment_slip/report/report_webkit_html.py:129
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:204
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:156
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:162
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:168
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:178
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:190
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:283
 #, python-format
 msgid "UserError"
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: help:res.company,bvr_delta_vert:0
-msgid ""
-"vert. delta in mm 1.2 will print the bvr 1.2mm lower, negative value is "
-"possible"
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:191
+#, python-format
+msgid "Your invoice should be validated to generate BVR reference."
 msgstr ""
-"Delta vert. en mm 1.2 imprimera le BVR 1.2mm plus bas, des valeurs négatives "
-"sont possibles"
 
 #. module: l10n_ch_payment_slip
 #: help:res.company,bvr_scan_line_horz:0
@@ -170,18 +151,12 @@ msgid "Horiz. position in mm for scan line"
 msgstr "Position horiz. en mm pour la ligne de codage"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:251
-#, python-format
-msgid "Inv. no "
-msgstr ""
-
-#. module: l10n_ch_payment_slip
 #: model:ir.model,name:l10n_ch_payment_slip.model_res_company
 msgid "Companies"
 msgstr "Sociétés"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:83
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:84
 #, python-format
 msgid "Too much total record found!"
 msgstr ""
@@ -192,13 +167,12 @@ msgid "BVR options"
 msgstr "Options BVR"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_scan_line_font_size
 #: field:res.company,bvr_scan_line_font_size:0
 msgid "BVR scan line font size (pt)"
 msgstr "Taille de police de la ligne de codage BVR (pt)"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:97
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:99
 #, python-format
 msgid "Total record different from the computed!"
 msgstr ""
@@ -209,36 +183,46 @@ msgid "Vert. position in mm for address"
 msgstr "Position vert. en mm pour l'adresse"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:87
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:88
 #, python-format
 msgid "Record found after total record!"
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:82
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:86
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:96
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:99
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:110
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:180
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:83
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:87
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:98
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:103
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:119
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:199
 #, python-format
 msgid "Error"
-msgstr ""
+msgstr "Erreur"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_delta_horz
+#: help:res.company,bvr_delta_vert:0
+msgid ""
+"vert. delta in mm 1.2 will print the bvr 1.2mm lower, negative value is "
+"possible"
+msgstr "Delta vert. en mm 1.2 imprimera le BVR 1.2mm plus bas, des valeurs négatives sont possibles"
+
+#. module: l10n_ch_payment_slip
 #: field:res.company,bvr_delta_horz:0
 msgid "BVR Horz. Delta (mm)"
 msgstr "BVR delta horz. (mm)"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_delta_vert
 #: field:res.company,bvr_delta_vert:0
 msgid "BVR Vert. Delta (mm)"
 msgstr "BVR delta vert. (mm)"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_scan_line_vert
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:254
+#, python-format
+msgid "Inv. no %s"
+msgstr ""
+
+#. module: l10n_ch_payment_slip
 #: field:res.company,bvr_scan_line_vert:0
 msgid "BVR vert. position for scan line (mm)"
 msgstr "BVR position vert. pour la ligne de codage (mm)"
@@ -254,13 +238,13 @@ msgid "Bank Accounts"
 msgstr "Comptes bancaires"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:205
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:284
 #, python-format
 msgid "Please select a file first!"
 msgstr ""
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:181
+#: code:addons/l10n_ch_payment_slip/wizard/bvr_import.py:200
 #, python-format
 msgid "The properties account payable account receivable are not set"
 msgstr ""
@@ -271,13 +255,6 @@ msgid "bvr.import.wizard"
 msgstr "bvr.import.wizard"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:37
-#, python-format
-msgid "Your invoice should be validated to generate BVR references."
-msgstr ""
-
-#. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_company_bvr_add_horz
 #: field:res.company,bvr_add_horz:0
 msgid "BVR horiz. position address (mm)"
 msgstr "BVR position horiz. adresse (mm)"
@@ -288,14 +265,12 @@ msgid "Cancel"
 msgstr "Annuler"
 
 #. module: l10n_ch_payment_slip
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_res_partner_bank_print_partner
 #: field:res.partner.bank,print_partner:0
 msgid "Print Partner Address on BVR"
 msgstr "Imprimer l'adresse du partenaire sur le BVR"
 
 #. module: l10n_ch_payment_slip
 #: field:account.invoice,bvr_reference:0
-#: model:ir.model.fields,field_description:l10n_ch_payment_slip.field_account_invoice_bvr_reference
 msgid "BVR REF."
 msgstr "REF. BVR"
 
@@ -305,7 +280,7 @@ msgid "BVR Data"
 msgstr "Données BVR"
 
 #. module: l10n_ch_payment_slip
-#: code:addons/l10n_ch_payment_slip/report/report_webkit_html.py:120
+#: code:addons/l10n_ch_payment_slip/report/multi_report_webkit_html.py:163
 #, python-format
 msgid ""
 "No bank specified on invoice:\n"

@@ -4,26 +4,14 @@
 <Document xmlns="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.six-interbank-clearing.com/de/pain.001.001.03.ch.02.xsd pain.001.001.03.ch.02.xsd">
 </%block>
 
-<%block name="InitgPty">
-        <InitgPty>
-          <Nm>${order.user_id.company_id.name}</Nm>
-          <CtctDtls>
-            <Nm>OpenERP - SEPA Payments - by Camptocamp</Nm>
-            <Othr>${module_version}</Othr>
-          </CtctDtls>
-        </InitgPty>
-</%block>
-
 <%block name="CdtrAgt">
 <%doc>\
-        For type 1, and 2.1 Creditor Agent shouldn't be delivered
+        For type 1, Creditor Agent shouldn't be delivered
 </%doc>\
    <%
-   line = sepa_context['line']
-   invoice = line.move_line_id and line.move_line_id.invoice or False
-   bank = invoice and (invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
+   line=sepa_context['line']
    %>
-   % if bank and not (bank.state == 'bvr' or bank.state == 'bv'):
+   % if not line.bank_id.state == 'bvr':
     ${parent.CdtrAgt()}
    % endif
 </%block>
@@ -45,20 +33,12 @@
 
 </%doc>\
    <%
-   line = sepa_context['line']
-   invoice = line.move_line_id and line.move_line_id.invoice or False
-   bank = invoice and (invoice.partner_bank_id or (invoice.partner_id.bank_ids and invoice.partner_id.bank_ids[0]) or (invoice.partner_id.parent_id and invoice.partner_id.parent_id.bank_ids and invoice.partner_id.parent_id.bank_ids[0]))
+   line=sepa_context['line']
    %>
-   % if bank and bank.state == 'bvr':
+   % if line.bank_id.state == 'bvr':
           <PmtTpInf>
               <LclInstrm>
                 <Prtry>CH01</Prtry>
-              </LclInstrm>
-          </PmtTpInf>
-   % elif bank and bank.state == 'bv':
-          <PmtTpInf>
-              <LclInstrm>
-                <Prtry>CH02</Prtry>
               </LclInstrm>
           </PmtTpInf>
    % endif
@@ -66,16 +46,51 @@
 
 <%block name="RmtInf">
    <%
-   line = sepa_context['line']
-   invoice = line.move_line_id and line.move_line_id.invoice or False
+   line=sepa_context['line']
    %>
-   % if invoice and invoice.reference_type == 'bvr':
+<%doc>\
+Strd:
+Art 1 (ESR): Muss verwendet werden.
+Art 2.1, 2.2 (ES 1-stufig, ES 2-stufig): Darf nicht verwendet werden.
+Art 3: Darf verwendet werden. In Zusammenhang
+mit QR-IBAN (gültig ab 01.01.2019) muss dieses
+Element verwendet werden.
+Art 4, 5, 6, 7, 8: Darf maximal 140 Zeichen
+einschliesslich XML-Tags beinhalten.
+</%doc>\
+   % if line.bank_id.state == 'bvr' and line.communication:
+<%doc>\
+STRD - Structured:
+    ISO Definition:
+    Information supplied to enable the matching/reconciliation of an entry with the items that the payment is
+    intended to settle, such as commercial invoices in an accounts' receivable system, in a structured form.
+    CH Definition: Only one occurrence is allowed, maximum 140 characters inclusive XML tags. If used, then
+    "Unstructured" must not be present.
+    CH PT Definition: Type 1: must be used.
+    Type 2.1, 2.2: must not be used.
+    Type 3: May be used. In association with QR-IBAN (valid from 01.01.2019) this element must be used.
+    Type 4, 5, 6, 7, 8: May only contain maximum 140 characters including XML tags.
+STRD - Structured:
+</%doc>\
           <RmtInf>
             <Strd>
               <CdtrRefInf>
-                <Ref>${line.communication or invoice.reference}</Ref>
+                <Ref>${line.communication.replace(' ', '')}</Ref>
               </CdtrRefInf>
             </Strd>
+          </RmtInf>
+   % elif  line.bank_id.state != 'bvr' and line.communication:
+<%doc>\
+USTRD - UnStructured:
+    ISO Definition: Information supplied to enable the matching/reconciliation of an entry with the items that the payment is
+    intended to settle, such as commercial invoices in an accounts' receivable system, in an unstructured
+    form.
+    CH Definition: Only one occurrence is allowed, maximum 140 characters. If used, then "Structured" must not be
+    present.
+    CH PT Definition: Type 1: must not be used.
+</%doc>\
+          <RmtInf>
+            <Ustrd>${line.communication}</Ustrd>
           </RmtInf>
    % endif
 </%block>
