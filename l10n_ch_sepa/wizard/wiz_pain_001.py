@@ -30,6 +30,7 @@
 
 import time
 import base64
+import unidecode
 
 from openerp.osv import orm, fields
 
@@ -72,8 +73,8 @@ class WizardPain001(orm.TransientModel):
         '''
         attachment_obj = self.pool.get('ir.attachment')
         vals = {
-            'name': 'pain001_%s' % time.strftime("%Y-%m-%d_%H:%M:%S",
-                                                 time.gmtime()),
+            'name': 'pain001_%s.xml' % time.strftime("%Y-%m-%d_%H:%M:%S",
+                                                     time.gmtime()),
             'datas': data['base64_data'],
             'datas_fname': 'pain001_%s.xml' % time.strftime(
                 "%Y-%m-%d_%H:%M:%S",
@@ -104,6 +105,10 @@ class WizardPain001(orm.TransientModel):
         pain = self._get_pain_def(cc)
 
         pain_001 = pain.compute_export(cr, uid, pay_id, context=context)
+        # Due to some bank restrcition we remove all accents
+        # from file using unidecode
+        pain_001 = unidecode.unidecode(pain_001)
+        #
         pain_001_file = base64.encodestring(pain_001.encode('utf-8'))
 
         data = {'base64_data': pain_001_file, 'id': pay_id}

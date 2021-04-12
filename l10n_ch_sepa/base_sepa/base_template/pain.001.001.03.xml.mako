@@ -4,6 +4,8 @@
 </%block>\
 \
 <%!
+    import re
+
     def filter_text(text):
         # Mapping between Latin-1 to ascii characters, used also for LSV.
         LSV_LATIN1_TO_ASCII_MAPPING = {
@@ -41,6 +43,12 @@
         }
         text = ''.join([LSV_LATIN1_TO_ASCII_MAPPING.get(ord(ch), ch) for ch in text])
         return text
+
+    def truncate_70(text):
+        return text[0:69]
+
+    def remove_special_chars(text):
+        return re.sub(r'([^a-zA-Z0-9\.,;:\'\+\-/\(\)?\*\[\]\{\}\\`´~ !\"#%&<>÷=@_$£àáâäçèéêëìíîïñòóôöùúûüýßÀÁÂÄÇÈÉÊËÌÍÎÏÒÓÔÖÙÚÛÜÑ])', ' ', text)
 %>
   <CstmrCdtTrfInitn>
     <GrpHdr>
@@ -52,10 +60,13 @@
       %>
       <CtrlSum>${control_sum}</CtrlSum>\
       <%block name="InitgPty">
-        <InitgPty>
-          <Nm>${order.user_id.company_id.name | filter_text}</Nm>\
-          ${address(order.user_id.company_id.partner_id) | filter_text}\
-        </InitgPty>\
+          <InitgPty>
+              <Nm>${order.user_id.company_id.name | filter_text,remove_special_chars,truncate_70}</Nm>
+              <CtctDtls>
+                <Nm>OpenERP - SEPA Payments - by Camptocamp</Nm>
+                <Othr>${module_version}</Othr>
+              </CtctDtls>
+          </InitgPty>
       </%block>
     </GrpHdr>\
 <%doc>\
@@ -64,37 +75,41 @@
   in sub blocks and inheritages. Because, for now, only unamed
   blocks and def in mako can use a local for loop variable.
 </%doc>\
-% for line in order.line_ids:
-  <% sepa_context['line'] = line %>\
   <%block name="PmtInf">\
-    <%
-    line = sepa_context['line']
-    today = thetime.strftime("%Y-%m-%d")
-    %>
+        <%
+        today = thetime.strftime("%Y-%m-%d")
+        %>
       <PmtInf>
-        <PmtInfId>${line.name}</PmtInfId>
+        <PmtInfId>${order.reference | filter_text}</PmtInfId>
         <PmtMtd>TRF</PmtMtd>
-        <BtchBookg>false</BtchBookg>
-        <ReqdExctnDt>${line.date > today and line.date or today}</ReqdExctnDt>
+        <BtchBookg>true</BtchBookg>
+        <ReqdExctnDt>${(order.date_scheduled and order.date_scheduled > today and order.date_scheduled) or today}</ReqdExctnDt>
         <Dbtr>
-          <Nm>${order.user_id.company_id.name | filter_text}</Nm>\
-            <!-- SIX ISO20022 Recommendation: Do not use. -->
-            <!--${self.address(order.user_id.company_id.partner_id) | filter_text}\-->
+          <Nm>${order.user_id.company_id.name | filter_text,remove_special_chars,truncate_70}</Nm>\
+          ${self.address(order.user_id.company_id.partner_id) | filter_text}\
         </Dbtr>
         <DbtrAcct>\
           ${self.acc_id(order.mode.bank_id)}\
+         <Tp>
+            <Prtry>CWD</Prtry>
+         </Tp>\
+
         </DbtrAcct>
         <DbtrAgt>
           <FinInstnId>
             <BIC>${order.mode.bank_id.bank.bic or order.mode.bank_id.bank_bic}</BIC>
           </FinInstnId>
         </DbtrAgt>
+ % for line in order.line_ids:
+        <% sepa_context['line'] = line %>
+        <%
+        line = sepa_context['line']
+        %>
         <CdtTrfTxInf>
           <PmtId>
             <InstrId>${line.name}</InstrId>
             <EndToEndId>${line.name}</EndToEndId>
           </PmtId>
-          <% sepa_context['line'] = line %>
           <%block name="PmtTpInf"/>
           <Amt>
             <InstdAmt Ccy="${line.currency.name}">${line.amount_currency}</InstdAmt>
@@ -113,17 +128,30 @@
             </CdtrAgt>
           </%block>
           <Cdtr>
-            <Nm>${line.partner_id.name | filter_text}</Nm>\
-            ${self.address(line.partner_id) | filter_text}\
+            <Nm>${line.bank_id.owner_name or line.partner_id.name| filter_text,remove_special_chars,truncate_70}</Nm>
+              <PstlAdr>
+                %if line.bank_id.street:
+                  <StrtNm>${line.bank_id.street | filter_text}</StrtNm>
+                %endif
+                %if line.bank_id.zip:
+                  <PstCd>${line.bank_id.zip | filter_text}</PstCd>
+                %endif
+                %if line.bank_id.city:
+                  <TwnNm>${line.bank_id.city | filter_text}</TwnNm>
+                %endif
+                %if line.bank_id.country_id:
+                <Ctry>${line.bank_id.country_id.code}</Ctry>
+                %endif
+              </PstlAdr>
           </Cdtr>
           <CdtrAcct>\
             ${self.acc_id(line.bank_id)}\
           </CdtrAcct>\
           <%block name="RmtInf"/>
         </CdtTrfTxInf>
+% endfor
       </PmtInf>\
   </%block>
-% endfor
 \
   </CstmrCdtTrfInitn>
 </Document>
@@ -132,9 +160,6 @@
               <PstlAdr>
                 %if partner.street:
                   <StrtNm>${partner.street | filter_text}</StrtNm>
-                %endif
-                %if partner.street_no:
-                  <BldgNb>${partner.street_no | filter_text}</BldgNb>
                 %endif
                 %if partner.zip:
                   <PstCd>${partner.zip | filter_text}</PstCd>
