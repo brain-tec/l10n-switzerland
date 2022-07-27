@@ -16,6 +16,10 @@ class AccountInvoice(models.Model):
 
     _inherit = "account.move"
 
+    def _get_rounded_amount(self, amount):
+        decimal = self.currency_id.decimal_places or 2
+        return round(amount, decimal)
+
     @api.onchange("partner_id", "company_id")
     def _transmit_method_partner_change(self):
         super()._transmit_method_partner_change()
@@ -25,9 +29,7 @@ class AccountInvoice(models.Model):
         if self.transmit_method_id == paynet_method:
             contract = self.partner_id.get_active_contract(self.transmit_method_id)
             if contract:
-                self.invoice_partner_bank_id = (
-                    contract.paynet_service_id.partner_bank_id
-                )
+                self.partner_bank_id = contract.paynet_service_id.partner_bank_id
 
     def _export_invoice(self):
         """Export invoice with the help of account_invoice_export module."""
