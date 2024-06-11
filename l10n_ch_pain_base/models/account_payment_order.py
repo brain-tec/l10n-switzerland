@@ -79,7 +79,7 @@ class AccountPaymentOrder(models.Model):
             if bank_line.payment_line_ids[:1].local_instrument == "CH01":
                 # Don't set the creditor agent on ISR/CH01 payments
                 return True
-            elif not partner_bank.bank_bic:
+            elif partner_bank.acc_type != 'iban' and not partner_bank.bank_bic:
                 raise UserError(
                     _(
                         "For pain.001.001.03.ch.02, for non-ISR payments, "
