@@ -14,7 +14,7 @@ class AccountMoveLine(models.Model):
             and self.move_id._has_isr_ref()
             and self.move_id.partner_bank_id
         ):
-            if self.move_id.partner_bank_id._is_qr_iban():
+            if self.move_id.partner_bank_id.l10n_ch_qr_iban:
                 vals["communication_type"] = "qrr"
             else:
                 vals["local_instrument"] = "CH01"
