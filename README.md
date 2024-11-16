@@ -25,6 +25,7 @@ addon | version | maintainers | summary
 [ebill_paynet_customer_free_ref](ebill_paynet_customer_free_ref/) | 14.0.1.0.2 |  | Glue module: ebill_paynet and sale_order_customer_free_ref
 [ebill_postfinance](ebill_postfinance/) | 14.0.1.1.0 | [![TDu](https://github.com/TDu.png?size=30px)](https://github.com/TDu) | Postfinance eBill integration
 [ebill_postfinance_customer_free_ref](ebill_postfinance_customer_free_ref/) | 14.0.1.0.0 |  | Glue module: ebill_postfinance and sale_order_customer_free_ref
+[ebill_postfinance_financial_discount](ebill_postfinance_financial_discount/) | 14.0.1.0.0 |  | Integrate the discount from account_financial_discount into ebill_postfinance
 [ebill_postfinance_server_env](ebill_postfinance_server_env/) | 14.0.1.0.0 |  | Server environment for eBill Postfinance
 [ebill_postfinance_stock](ebill_postfinance_stock/) | 14.0.1.0.0 | [![TDu](https://github.com/TDu.png?size=30px)](https://github.com/TDu) | Add stock integration to Postfinance eBill
 [l10n_ch_account_tags](l10n_ch_account_tags/) | 14.0.1.0.0 |  | Switzerland Account Tags
