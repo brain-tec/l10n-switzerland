@@ -4,7 +4,7 @@
 {
     "name": "Switzerland - PAIN Credit Transfer",
     "summary": "Generate ISO 20022 credit transfert (SEPA and not SEPA)",
-    "version": "16.0.1.0.0",
+    "version": "16.0.1.1.0",
     "category": "Finance",
     "author": "Akretion,Camptocamp,Odoo Community Association (OCA)",
     "maintainers": ["ecino"],
@@ -12,7 +12,9 @@
     "website": "https://github.com/OCA/l10n-switzerland",
     "depends": [
         "l10n_ch_pain_base",
+        "l10n_ch",
         "account_banking_sepa_credit_transfer",
     ],
+    "data": ["views/account_payment_method.xml"],
     "installable": True,
 }
