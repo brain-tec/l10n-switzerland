@@ -24,13 +24,19 @@ import os
 from ..base_sepa.msg_sepa import MsgSEPAFactory
 from ..base_sepa.pain_001 import Pain001
 
-_xsd_path = os.path.join('l10n_ch', 'xsd',
-                         'pain.001.001.03.ch.02.xsd')
+_xsd_path = os.path.join('base_sepa', 'base_xsd',
+                         'pain.001.001.09.ch.03.xsd')
 _tmpl_dirs = [os.path.join('l10n_ch', 'template')]
-_tmpl_name = 'pain.001.001.03.ch.02.xml.mako'
+_tmpl_name = 'pain.001.001.09.ch.03.xml.mako'
 
 
+_pain_001_ch09_args = {
+    'xsd_path': _xsd_path,
+    'tmpl_dirs': _tmpl_dirs,
+    'tmpl_name': _tmpl_name,
+}
+
+MsgSEPAFactory.register_class('pain.001.ch.09', Pain001,
+                              **_pain_001_ch09_args)
 MsgSEPAFactory.register_class('pain.001.ch', Pain001,
-                              xsd_path=_xsd_path,
-                              tmpl_dirs=_tmpl_dirs,
-                              tmpl_name=_tmpl_name)
+                              **_pain_001_ch09_args)
