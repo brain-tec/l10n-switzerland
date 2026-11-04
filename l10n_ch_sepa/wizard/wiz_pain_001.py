@@ -55,6 +55,11 @@ class WizardPain001(models.TransientModel):
          of selected company bank (via payment mode)
          if no country is defined, take the company country
          - Here we could add a second level for bank definitions'''
+        if MsgSEPAFactory.has_instance('pain.001.ch.09'):
+            return MsgSEPAFactory.get_instance('pain.001.ch.09')
+        # Backwards compatibility for other Swiss implementations.
+        if MsgSEPAFactory.has_instance('pain.001.ch'):
+            return MsgSEPAFactory.get_instance('pain.001.ch')
         if country_code:
             class_name = 'pain.001' + '.' + country_code.lower()
             if MsgSEPAFactory.has_instance(class_name):
@@ -99,7 +104,10 @@ class WizardPain001(models.TransientModel):
         payment = payment_obj.browse(cr, uid, pay_id, context=context)
 
         cc = self._get_country_code(payment)
-        pain = self._get_pain_def(cc)
+        if MsgSEPAFactory.has_instance('pain.001.ch.09'):
+            pain = MsgSEPAFactory.get_instance('pain.001.ch.09')
+        else:
+            pain = self._get_pain_def(cc)
 
         pain_001 = pain.compute_export(cr, uid, pay_id, context=context)
         pain_001_file = base64.encodestring(pain_001.encode('utf-8'))
